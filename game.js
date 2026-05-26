@@ -70,8 +70,8 @@ async function startGame(mode) {
     playerCharsCompleted = 0;
     currentLap = 1;
 
+    aiCar.style.display = 'block';
     if (gameMode === 'race') {
-        aiCar.style.display = 'block';
         for (let i = 0; i < totalLaps; i++) {
             const s = await fetchSentence();
             raceSentences.push(s);
@@ -79,9 +79,8 @@ async function startGame(mode) {
         }
         currentSentence = raceSentences[0];
     } else {
-        aiCar.style.display = 'none';
         currentSentence = await fetchSentence();
-        totalRaceChars = currentSentence.length;
+        totalRaceChars = 150; // Reference for progress
         totalLaps = 1;
     }
 
@@ -90,21 +89,21 @@ async function startGame(mode) {
     lapCounter.style.display = 'block';
     updateLapUI();
 
-    typingInput.disabled = false;
-    typingInput.focus();
+    typingInput.disabled = true;
 
     totalCharsTyped = 0;
     errors = 0;
     playerVisualProgress = 0;
     aiVisualProgress = 0;
-    gameActive = true;
-    startTime = Date.now();
+    gameActive = false;
 
     updateCarPositions(0, 0);
 
     startCountdown(() => {
         gameActive = true;
         startTime = Date.now();
+        typingInput.disabled = false;
+        typingInput.focus();
         requestAnimationFrame(updateGame);
     });
 }
@@ -175,10 +174,10 @@ typingInput.addEventListener('input', async () => {
 
     if (val === currentSentence) {
         if (gameMode === 'practice') {
-            playerCharsCompleted = 0;
-            playerVisualProgress = 0;
+            playerCharsCompleted += currentSentence.length;
+            currentLap++;
+            updateLapUI();
             currentSentence = await fetchSentence();
-            totalRaceChars = currentSentence.length;
             typingInput.value = "";
             renderSentence("");
         } else {
@@ -211,9 +210,10 @@ function updateGame() {
 
     const now = Date.now();
     const elapsedSeconds = (now - startTime) / 1000;
+    const baseCPM = 30; // Constant slow movement
     const aiCPM = { 'easy': 140, 'medium': 280, 'hard': 480 }[difficulty];
 
-    // Player progress
+    // Player progress calculation
     let playerCorrectInSentence = 0;
     const val = typingInput.value;
     for (let i = 0; i < val.length; i++) {
@@ -221,26 +221,34 @@ function updateGame() {
         else break;
     }
 
-    const playerTotalCorrect = playerCharsCompleted + playerCorrectInSentence;
-    const playerActualProgress = Math.min(1, playerTotalCorrect / totalRaceChars);
+    const playerTotalCorrect = playerCharsCompleted + playerCorrectInSentence + (baseCPM * elapsedSeconds / 60);
+    const aiTotalChars = ((aiCPM + baseCPM) * elapsedSeconds / 60);
 
-    playerVisualProgress += (playerActualProgress - playerVisualProgress) * 0.1;
+    let pLapProgress, aLapProgress;
 
-    // AI progress
-    const aiTotalChars = (aiCPM * elapsedSeconds / 60);
-    const aiActualProgress = Math.min(1, aiTotalChars / totalRaceChars);
-    aiVisualProgress += (aiActualProgress - aiVisualProgress) * 0.1;
+    if (gameMode === 'race') {
+        const playerActualProgress = Math.min(1, playerTotalCorrect / totalRaceChars);
+        playerVisualProgress += (playerActualProgress - playerVisualProgress) * 0.1;
 
-    const pLapProgress = (playerVisualProgress * totalLaps) % 1;
-    const aLapProgress = (aiVisualProgress * totalLaps) % 1;
+        const aiActualProgress = Math.min(1, aiTotalChars / totalRaceChars);
+        aiVisualProgress += (aiActualProgress - aiVisualProgress) * 0.1;
+
+        pLapProgress = (playerVisualProgress * totalLaps) % 1;
+        aLapProgress = (aiVisualProgress * totalLaps) % 1;
+
+        if (aiActualProgress >= 1) {
+            winRace('ai');
+            return;
+        }
+    } else {
+        // Practice mode: constant lap length (150 chars) for smooth "circulating"
+        const lapLen = 150;
+        pLapProgress = (playerTotalCorrect / lapLen) % 1;
+        aLapProgress = (aiTotalChars / lapLen) % 1;
+    }
 
     updateCarPositions(pLapProgress, aLapProgress);
-
-    if (gameMode === 'race' && aiActualProgress >= 1) {
-        winRace('ai');
-    } else {
-        requestAnimationFrame(updateGame);
-    }
+    requestAnimationFrame(updateGame);
 }
 
 function updateCarPositions(playerLapProgress, aiLapProgress) {
