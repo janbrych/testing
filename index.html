@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Type Racer - Typing Speed Game</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <h1>Type Racer</h1>
+
+        <div id="difficulty-selection">
+            <p>Select Difficulty:</p>
+            <button onclick="startGame('easy')">Easy</button>
+            <button onclick="startGame('medium')">Medium</button>
+            <button onclick="startGame('hard')">Hard</button>
+        </div>
+
+        <div id="race-track">
+            <div id="player-car" class="car"></div>
+            <div id="ai-car" class="car"></div>
+            <div id="finish-line"></div>
+        </div>
+
+        <div id="typing-area" style="display:none;">
+            <div id="sentence-display"></div>
+            <input type="text" id="typing-input" placeholder="Start typing here..." autocomplete="off">
+        </div>
+
+        <div id="results" style="display:none;">
+            <h2>Race Results</h2>
+            <p id="winner-text"></p>
+            <p>Accuracy: <span id="accuracy-val">0</span>%</p>
+            <p>CPM: <span id="cpm-val">0</span></p>
+            <button onclick="resetGame()">Play Again</button>
+        </div>
+    </div>
+    <script src="game.js"></script>
+</body>
+</html>

@@ -1,0 +1,139 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #2c3e50;
+    color: #ecf0f1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+#game-container {
+    background-color: #34495e;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    width: 80%;
+    max-width: 800px;
+    text-align: center;
+}
+
+#race-track {
+    position: relative;
+    height: 150px;
+    background-color: #555;
+    margin: 20px 0;
+    border-top: 4px dashed #fff;
+    border-bottom: 4px dashed #fff;
+    overflow: hidden;
+}
+
+.car {
+    position: absolute;
+    width: 60px;
+    height: 40px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    transition: left 0.1s linear;
+}
+
+#player-car {
+    top: 20px;
+    background-image: url('https://cdn-icons-png.flaticon.com/512/744/744465.png'); /* Red Car */
+    background-color: transparent;
+    left: 0;
+    z-index: 2;
+}
+
+#ai-car {
+    top: 80px;
+    background-image: url('https://cdn-icons-png.flaticon.com/512/744/744465.png'); /* Same car, we can filter it */
+    filter: hue-rotate(200deg); /* Make it blue */
+    background-color: transparent;
+    left: 0;
+    z-index: 1;
+}
+
+/* Let's try to find actual car sprites instead of pokemon if possible, but these are reliable CDNs */
+
+#finish-line {
+    position: absolute;
+    right: 10px;
+    top: 0;
+    bottom: 0;
+    width: 10px;
+    background: repeating-linear-gradient(
+        0deg,
+        #fff,
+        #fff 10px,
+        #000 10px,
+        #000 20px
+    );
+}
+
+#typing-area {
+    margin-top: 20px;
+}
+
+#sentence-display {
+    font-size: 1.5rem;
+    margin-bottom: 15px;
+    padding: 20px;
+    background-color: #2c3e50;
+    border-radius: 8px;
+    min-height: 1.5em;
+    line-height: 1.6;
+    text-align: left;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+#typing-input {
+    width: 100%;
+    padding: 10px;
+    font-size: 1.1rem;
+    border: none;
+    border-radius: 5px;
+}
+
+.correct { color: #2ecc71; }
+.incorrect { color: #e74c3c; background-color: rgba(231, 76, 60, 0.2); }
+
+#results {
+    margin-top: 20px;
+}
+
+button {
+    padding: 12px 24px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    margin: 10px;
+    transition: transform 0.1s, background-color 0.2s;
+}
+
+button:hover {
+    background-color: #2980b9;
+    transform: scale(1.05);
+}
+
+#results button {
+    background-color: #2ecc71;
+}
+
+#results button:hover {
+    background-color: #27ae60;
+}
+
+#typing-input:focus {
+    outline: 3px solid #3498db;
+}
+
+h1 {
+    margin-top: 0;
+    color: #f1c40f;
+}
