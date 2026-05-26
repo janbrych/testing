@@ -183,13 +183,15 @@ function updateCarPositions(playerLapProgress, aiLapProgress) {
     const pAngle = Math.atan2(pPointAhead.y - pPoint.y, pPointAhead.x - pPoint.x) * 180 / Math.PI;
     const aAngle = Math.atan2(aPointAhead.y - aPoint.y, aPointAhead.x - aPoint.x) * 180 / Math.PI;
 
-    playerCar.style.left = `${pPoint.x - 20}px`;
-    playerCar.style.top = `${pPoint.y - 12}px`;
-    playerCar.style.transform = `rotate(${pAngle}deg)`;
+    // Adjust offset for car size (30x50)
+    // Adding 90deg base rotation because the cars in the spritesheet face UP
+    playerCar.style.left = `${pPoint.x - 15}px`;
+    playerCar.style.top = `${pPoint.y - 25}px`;
+    playerCar.style.transform = `rotate(${pAngle + 90}deg)`;
 
-    aiCar.style.left = `${aPoint.x - 20}px`;
-    aiCar.style.top = `${aPoint.y - 12}px`;
-    aiCar.style.transform = `rotate(${aAngle}deg)`;
+    aiCar.style.left = `${aPoint.x - 15}px`;
+    aiCar.style.top = `${aPoint.y - 25}px`;
+    aiCar.style.transform = `rotate(${aAngle + 90}deg)`;
 }
 
 function winRace(winner) {

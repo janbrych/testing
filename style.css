@@ -36,22 +36,24 @@ body {
 
 .car {
     position: absolute;
-    width: 40px;
-    height: 25px;
-    background-size: contain;
+    width: 30px;
+    height: 50px;
+    background-image: url('cars.jpg');
+    background-size: 1000% 200%; /* 10x2 spritesheet */
     background-repeat: no-repeat;
     transform-origin: center;
-    /* transition: all 0.1s linear; Remove transition for smoother path following */
+    mix-blend-mode: multiply; /* Try to hide white background on the dark track */
 }
 
 #player-car {
-    background-image: url('https://cdn-icons-png.flaticon.com/512/744/744465.png');
+    /* 9th car in first row: Red */
+    background-position: 88.88% 0%;
     z-index: 10;
 }
 
 #ai-car {
-    background-image: url('https://cdn-icons-png.flaticon.com/512/744/744465.png');
-    filter: hue-rotate(200deg);
+    /* 10th car in first row: Light Blue */
+    background-position: 100% 0%;
     z-index: 9;
 }
 
