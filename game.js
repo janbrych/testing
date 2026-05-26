@@ -1,4 +1,5 @@
 let currentSentence = "";
+let raceSentences = [];
 let startTime;
 let gameActive = false;
 let gameMode = 'race'; // 'race' or 'practice'
@@ -7,10 +8,14 @@ let totalCharsTyped = 0;
 let errors = 0;
 let currentLap = 1;
 let totalLaps = 1;
-let playerVisualProgress = 0; // For smooth car movement
+let playerVisualProgress = 0;
+let aiVisualProgress = 0;
+let totalRaceChars = 0;
+let playerCharsCompleted = 0;
 
 const playerCar = document.getElementById('player-car');
 const aiCar = document.getElementById('ai-car');
+const gameContainer = document.getElementById('game-container');
 const trackPath = document.getElementById('track-path');
 const sentenceDisplay = document.getElementById('sentence-display');
 const typingInput = document.getElementById('typing-input');
@@ -24,7 +29,7 @@ const pathLength = trackPath.getTotalLength();
 
 function setDifficulty(d) {
     difficulty = d;
-    document.querySelectorAll('#difficulty-selection button').forEach(btn => {
+    document.querySelectorAll('.difficulty-btn').forEach(btn => {
         btn.classList.remove('active');
         if (btn.innerText.toLowerCase() === d) btn.classList.add('active');
     });
@@ -37,7 +42,14 @@ async function fetchSentence() {
         return data.text.replace(/\s+/g, ' ').trim();
     } catch (error) {
         console.error("Error fetching sentence:", error);
-        return "The quick brown fox jumps over the lazy dog.";
+        const fallbacks = [
+            "The quick brown fox jumps over the lazy dog.",
+            "Typing fast is a skill that takes practice and patience.",
+            "Racing cars is dangerous but very exciting for the fans.",
+            "Software engineering is about solving problems with code.",
+            "Artificial intelligence is changing the way we live and work."
+        ];
+        return fallbacks[Math.floor(Math.random() * fallbacks.length)];
     }
 }
 
@@ -48,25 +60,73 @@ async function startGame(mode) {
     document.getElementById('difficulty-selection').style.display = 'none';
     document.getElementById('results').style.display = 'none';
 
-    currentSentence = await fetchSentence();
+    sentenceDisplay.innerHTML = "<span style='color: #aaa'>Loading sentences...</span>";
+    document.getElementById('typing-area').style.display = 'block';
+    typingInput.disabled = true;
+    typingInput.value = "";
+
+    raceSentences = [];
+    totalRaceChars = 0;
+    playerCharsCompleted = 0;
+    currentLap = 1;
+
+    if (gameMode === 'race') {
+        aiCar.style.display = 'block';
+        for (let i = 0; i < totalLaps; i++) {
+            const s = await fetchSentence();
+            raceSentences.push(s);
+            totalRaceChars += s.length;
+        }
+        currentSentence = raceSentences[0];
+    } else {
+        aiCar.style.display = 'none';
+        currentSentence = await fetchSentence();
+        totalRaceChars = currentSentence.length;
+        totalLaps = 1;
+    }
+
     renderSentence("");
 
-    document.getElementById('typing-area').style.display = 'block';
     lapCounter.style.display = 'block';
-    currentLap = 1;
     updateLapUI();
 
-    typingInput.value = "";
     typingInput.disabled = false;
     typingInput.focus();
 
     totalCharsTyped = 0;
     errors = 0;
+    playerVisualProgress = 0;
+    aiVisualProgress = 0;
     gameActive = true;
     startTime = Date.now();
 
     updateCarPositions(0, 0);
-    requestAnimationFrame(updateGame);
+
+    startCountdown(() => {
+        gameActive = true;
+        startTime = Date.now();
+        requestAnimationFrame(updateGame);
+    });
+}
+
+function startCountdown(callback) {
+    const countdownEl = document.getElementById('countdown');
+    countdownEl.style.display = 'block';
+    let count = 3;
+    countdownEl.innerText = count;
+
+    const interval = setInterval(() => {
+        count--;
+        if (count > 0) {
+            countdownEl.innerText = count;
+        } else if (count === 0) {
+            countdownEl.innerText = "GO!";
+        } else {
+            clearInterval(interval);
+            countdownEl.style.display = 'none';
+            callback();
+        }
+    }, 1000);
 }
 
 function updateLapUI() {
@@ -113,23 +173,24 @@ typingInput.addEventListener('input', async () => {
 
     renderSentence(val);
 
-    // Check if sentence complete
     if (val === currentSentence) {
         if (gameMode === 'practice') {
+            playerCharsCompleted = 0;
+            playerVisualProgress = 0;
             currentSentence = await fetchSentence();
+            totalRaceChars = currentSentence.length;
             typingInput.value = "";
             renderSentence("");
         } else {
-            // In race mode, we might need multiple sentences for multiple laps,
-            // or one long sentence per lap. Let's do one sentence per lap.
+            playerCharsCompleted += currentSentence.length;
             if (currentLap < totalLaps) {
+                currentSentence = raceSentences[currentLap];
                 currentLap++;
                 updateLapUI();
-                currentSentence = await fetchSentence();
                 typingInput.value = "";
-                playerVisualProgress = 0; // Reset visual for new lap
                 renderSentence("");
             } else {
+                playerVisualProgress = 1;
                 winRace('player');
             }
         }
@@ -138,34 +199,44 @@ typingInput.addEventListener('input', async () => {
 
 function flashError() {
     sentenceDisplay.style.backgroundColor = "rgba(231, 76, 60, 0.3)";
+    gameContainer.classList.add('shake');
     setTimeout(() => {
         sentenceDisplay.style.backgroundColor = "#2c3e50";
+        gameContainer.classList.remove('shake');
     }, 100);
 }
 
 function updateGame() {
     if (!gameActive) return;
 
-    const elapsedSeconds = (Date.now() - startTime) / 1000;
-    const aiCPM = { 'easy': 120, 'medium': 250, 'hard': 450 }[difficulty];
+    const now = Date.now();
+    const elapsedSeconds = (now - startTime) / 1000;
+    const aiCPM = { 'easy': 140, 'medium': 280, 'hard': 480 }[difficulty];
 
-    // Player progress - smooth interpolation
-    const actualLapProgress = typingInput.value.length / currentSentence.length;
-    // Slowly move the car towards the actual typed progress for a "constantly moving" feel
-    playerVisualProgress += (actualLapProgress - playerVisualProgress) * 0.1;
+    // Player progress
+    let playerCorrectInSentence = 0;
+    const val = typingInput.value;
+    for (let i = 0; i < val.length; i++) {
+        if (val[i] === currentSentence[i]) playerCorrectInSentence++;
+        else break;
+    }
+
+    const playerTotalCorrect = playerCharsCompleted + playerCorrectInSentence;
+    const playerActualProgress = Math.min(1, playerTotalCorrect / totalRaceChars);
+
+    playerVisualProgress += (playerActualProgress - playerVisualProgress) * 0.1;
 
     // AI progress
-    // We use a fixed duration based on difficulty for the AI to finish,
-    // rather than guessing sentence lengths, for better balance.
-    const secondsPerLap = { 'easy': 40, 'medium': 25, 'hard': 15 }[difficulty];
-    const totalRaceTime = totalLaps * secondsPerLap;
-    const aiProgress = elapsedSeconds / totalRaceTime;
+    const aiTotalChars = (aiCPM * elapsedSeconds / 60);
+    const aiActualProgress = Math.min(1, aiTotalChars / totalRaceChars);
+    aiVisualProgress += (aiActualProgress - aiVisualProgress) * 0.1;
 
-    const aiLapProgress = (aiProgress * totalLaps) % 1;
+    const pLapProgress = (playerVisualProgress * totalLaps) % 1;
+    const aLapProgress = (aiVisualProgress * totalLaps) % 1;
 
-    updateCarPositions(playerVisualProgress, aiLapProgress);
+    updateCarPositions(pLapProgress, aLapProgress);
 
-    if (gameMode === 'race' && aiProgress >= 1) {
+    if (gameMode === 'race' && aiActualProgress >= 1) {
         winRace('ai');
     } else {
         requestAnimationFrame(updateGame);
@@ -176,15 +247,12 @@ function updateCarPositions(playerLapProgress, aiLapProgress) {
     const pPoint = trackPath.getPointAtLength(playerLapProgress * pathLength);
     const aPoint = trackPath.getPointAtLength(aiLapProgress * pathLength);
 
-    // Approximate rotation by looking slightly ahead
     const pPointAhead = trackPath.getPointAtLength((playerLapProgress + 0.01) % 1 * pathLength);
     const aPointAhead = trackPath.getPointAtLength((aiLapProgress + 0.01) % 1 * pathLength);
 
     const pAngle = Math.atan2(pPointAhead.y - pPoint.y, pPointAhead.x - pPoint.x) * 180 / Math.PI;
     const aAngle = Math.atan2(aPointAhead.y - aPoint.y, aPointAhead.x - aPoint.x) * 180 / Math.PI;
 
-    // Adjust offset for car size (30x50)
-    // Adding 90deg base rotation because the cars in the spritesheet face UP
     playerCar.style.left = `${pPoint.x - 15}px`;
     playerCar.style.top = `${pPoint.y - 25}px`;
     playerCar.style.transform = `rotate(${pAngle + 90}deg)`;
@@ -221,5 +289,4 @@ function resetGame() {
     location.reload();
 }
 
-// Set default difficulty
 setDifficulty('medium');
