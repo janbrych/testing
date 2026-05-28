@@ -5,41 +5,84 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Type Racer - Typing Speed Game</title>
     <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Mono&display=swap" rel="stylesheet">
 </head>
 <body>
     <div id="game-container">
-        <h1>Type Racer</h1>
+        <h1>TYPE RACER</h1>
         <div id="countdown"></div>
 
-        <div id="difficulty-selection">
-            <p>Vyberte obtížnost:</p>
-            <button class="difficulty-btn" onclick="setDifficulty('easy')">Lehká</button>
-            <button class="difficulty-btn" onclick="setDifficulty('medium')">Střední</button>
-            <button class="difficulty-btn" onclick="setDifficulty('hard')">Těžká</button>
+        <div id="overlay-container">
+            <div id="difficulty-selection" class="overlay-content">
+                <h2>NASTAVENÍ ZÁVODU</h2>
+                <div class="setting-group">
+                    <p>Vyberte obtížnost:</p>
+                    <div class="btn-group">
+                        <button class="difficulty-btn" onclick="setDifficulty('easy')">Lehká</button>
+                        <button class="difficulty-btn active" onclick="setDifficulty('medium')">Střední</button>
+                        <button class="difficulty-btn" onclick="setDifficulty('hard')">Těžká</button>
+                    </div>
+                </div>
 
-            <div id="race-options" style="margin-top: 20px;">
-                <p>Počet kol:
-                    <select id="lap-select">
-                        <option value="1">1 kolo</option>
-                        <option value="3">3 kola</option>
-                        <option value="5">5 kol</option>
-                    </select>
-                </p>
-                <button onclick="startGame('race')" id="start-race-btn">Závod!</button>
-                <button onclick="startGame('practice')" id="start-practice-btn">Trénink</button>
+                <div class="setting-group">
+                    <p>Počet kol:</p>
+                    <div class="lap-selection">
+                        <button class="lap-btn" onclick="setLaps(1)">1 Kolo</button>
+                        <button class="lap-btn active" onclick="setLaps(3)">3 Kola</button>
+                        <button class="lap-btn" onclick="setLaps(5)">5 Kol</button>
+                    </div>
+                </div>
+
+                <div id="personal-best-menu">Osobní rekord: <span id="pb-val-menu">0</span> CPM</div>
+
+                <div class="menu-buttons">
+                    <button onclick="startGame('race')" id="start-race-btn" class="main-btn">START ZÁVODU</button>
+                    <button onclick="startGame('practice')" id="start-practice-btn" class="secondary-btn">TRÉNINK</button>
+                </div>
+            </div>
+
+            <div id="results" class="overlay-content" style="display:none;">
+                <h2 id="result-title">ZÁVOD DOKONČEN</h2>
+                <div id="medal-icon">🏆</div>
+                <p id="winner-text"></p>
+                <div class="stats">
+                    <div class="stat-box">
+                        <span class="stat-label">PŘESNOST</span>
+                        <span id="accuracy-val" class="stat-value">0</span><span class="unit">%</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-label">RYCHLOST</span>
+                        <span id="cpm-val" class="stat-value">0</span><span class="unit">CPM</span>
+                    </div>
+                </div>
+                <div id="new-best-msg" style="display:none; color: #ffcc00; margin-bottom: 10px; font-weight: bold;">NOVÝ OSOBNÍ REKORD!</div>
+                <button onclick="resetGame()" class="main-btn">ODVETA</button>
             </div>
         </div>
 
         <div id="race-track-container">
-            <div id="lap-counter" style="display:none;">Kolo: <span id="current-lap">1</span> / <span id="total-laps">1</span></div>
-            <svg id="race-track-svg" viewBox="0 0 800 400">
-                <!-- Complex winding track path -->
-                <!-- Outer road surface -->
-                <path id="track-surface" d="M 100,200 C 100,100 250,50 400,100 S 550,250 700,200 S 700,350 400,350 S 100,300 100,200" fill="none" stroke="#555" stroke-width="70" />
-                <!-- The actual path the cars follow -->
-                <path id="track-path" d="M 100,200 C 100,100 250,50 400,100 S 550,250 700,200 S 700,350 400,350 S 100,300 100,200" fill="none" stroke="transparent" stroke-width="60" />
-                <!-- Road markings -->
-                <path id="track-center-line" d="M 100,200 C 100,100 250,50 400,100 S 550,250 700,200 S 700,350 400,350 S 100,300 100,200" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2" stroke-dasharray="20,15" />
+            <div id="hud" style="display:none;">
+                <div class="hud-item">POŘADÍ: <span id="pos-val">1</span>/2</div>
+                <div class="hud-item">KOLO: <span id="lap-val">1</span>/<span id="total-laps-hud">3</span></div>
+                <div class="hud-item">RYCHLOST: <span id="speed-val">0</span> km/h</div>
+                <div id="nitro-container">
+                    <div id="nitro-label">NITRO</div>
+                    <div id="nitro-bar-bg">
+                        <div id="nitro-bar"></div>
+                    </div>
+                </div>
+            </div>
+
+            <svg id="race-track-svg" viewBox="0 0 1536 1024">
+                <defs>
+                    <filter id="remove-white" x="0" y="0" width="100%" height="100%">
+                        <feColorMatrix type="matrix" values="1 0 0 0 0
+                                                             0 1 0 0 0
+                                                             0 0 1 0 0
+                                                             -1.5 -1.5 -1.5 1 3.5" />
+                    </filter>
+                </defs>
+                <path id="track-path" d="M 456,645 L 1150,645 C 1380,645 1450,560 1350,500 C 1250,440 1000,440 850,440 C 700,440 700,340 850,340 C 1000,340 1350,340 1420,250 C 1490,160 1350,160 1150,160 L 400,160 C 150,160 100,350 100,410 C 100,470 150,645 400,645 L 456,645" fill="none" stroke="rgba(255,255,255,0)" stroke-width="1" />
             </svg>
             <div id="player-car" class="car"></div>
             <div id="ai-car" class="car"></div>
@@ -47,15 +90,7 @@
 
         <div id="typing-area" style="display:none;">
             <div id="sentence-display"></div>
-            <input type="text" id="typing-input" placeholder="Začněte psát zde..." autocomplete="off">
-        </div>
-
-        <div id="results" style="display:none;">
-            <h2>Výsledky závodu</h2>
-            <p id="winner-text"></p>
-            <p>Přesnost: <span id="accuracy-val">0</span>%</p>
-            <p>CPM: <span id="cpm-val">0</span></p>
-            <button onclick="resetGame()">Hrát znovu</button>
+            <input type="text" id="typing-input" placeholder="Pište text výše pro zrychlení..." autocomplete="off">
         </div>
     </div>
     <script src="game.js"></script>
