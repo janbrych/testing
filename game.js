@@ -31,26 +31,35 @@ function setDifficulty(d) {
     difficulty = d;
     document.querySelectorAll('.difficulty-btn').forEach(btn => {
         btn.classList.remove('active');
-        if (btn.innerText.toLowerCase() === d) btn.classList.add('active');
+        // Check onclick attribute to match difficulty ID
+        if (btn.getAttribute('onclick').includes(`'${d}'`)) btn.classList.add('active');
     });
 }
 
 async function fetchSentence() {
-    try {
-        const response = await fetch('https://uselessfacts.jsph.pl/api/v2/facts/random?language=en');
-        const data = await response.json();
-        return data.text.replace(/\s+/g, ' ').trim();
-    } catch (error) {
-        console.error("Error fetching sentence:", error);
-        const fallbacks = [
-            "The quick brown fox jumps over the lazy dog.",
-            "Typing fast is a skill that takes practice and patience.",
-            "Racing cars is dangerous but very exciting for the fans.",
-            "Software engineering is about solving problems with code.",
-            "Artificial intelligence is changing the way we live and work."
-        ];
-        return fallbacks[Math.floor(Math.random() * fallbacks.length)];
-    }
+    const czechSentences = [
+        "Příliš žluťoučký kůň úpěl ďábelské ódy.",
+        "Rychlá hnědá liška přeskakuje líného psa.",
+        "Kdo jinému jámu kopá, sám do ní padá.",
+        "Bez práce nejsou koláče, praví staré české přísloví.",
+        "Veselé vánoce a šťastný nový rok všem lidem dobré vůle.",
+        "Programování je umění řešit problémy pomocí logického myšlení.",
+        "Česká republika leží v samotném srdci Evropy.",
+        "Sportovní auta dosahují na závodních okruzích vysokých rychlostí.",
+        "Psaní všemi deseti prsty výrazně zvyšuje efektivitu práce.",
+        "Učení se novým dovednostem vyžaduje čas a vytrvalost.",
+        "Na vrcholu hory byl krásný výhled do širého okolí.",
+        "Vltava je nejdelší řeka na území České republiky.",
+        "Karel IV. byl jedním z nejvýznamnějších českých panovníků.",
+        "Dnes je venku krásné slunečné počasí ideální na procházku.",
+        "Pravidelné cvičení pomáhá udržovat tělo i mysl v kondici.",
+        "Trpělivost přináší růže, nezapomínejte na to při tréninku.",
+        "Praha je známá jako město sta věží a historických památek.",
+        "Technologie se mění rychleji, než si dokážeme představit.",
+        "Dobrý programátor píše kód, který je snadno čitelný pro ostatní.",
+        "Závodění vyžaduje maximální soustředění a rychlé reakce."
+    ];
+    return czechSentences[Math.floor(Math.random() * czechSentences.length)];
 }
 
 async function startGame(mode) {
@@ -60,7 +69,7 @@ async function startGame(mode) {
     document.getElementById('difficulty-selection').style.display = 'none';
     document.getElementById('results').style.display = 'none';
 
-    sentenceDisplay.innerHTML = "<span style='color: #aaa'>Loading sentences...</span>";
+    sentenceDisplay.innerHTML = "<span style='color: #aaa'>Načítání vět...</span>";
     document.getElementById('typing-area').style.display = 'block';
     typingInput.disabled = true;
     typingInput.value = "";
@@ -119,7 +128,7 @@ function startCountdown(callback) {
         if (count > 0) {
             countdownEl.innerText = count;
         } else if (count === 0) {
-            countdownEl.innerText = "GO!";
+            countdownEl.innerText = "START!";
         } else {
             clearInterval(interval);
             countdownEl.style.display = 'none';
@@ -282,10 +291,10 @@ function winRace(winner) {
 
     resultsArea.style.display = 'block';
     if (winner === 'player') {
-        winnerText.innerText = "You Won!";
+        winnerText.innerText = "Vyhrál jste!";
         winnerText.style.color = "#2ecc71";
     } else {
-        winnerText.innerText = "AI Won!";
+        winnerText.innerText = "AI vyhrálo!";
         winnerText.style.color = "#e74c3c";
     }
 

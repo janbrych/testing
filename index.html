@@ -8,30 +8,30 @@
 </head>
 <body>
     <div id="game-container">
-        <h1>Type Racer</h1>
+        <h1>Písařský závod</h1>
         <div id="countdown"></div>
 
         <div id="difficulty-selection">
-            <p>Select Difficulty:</p>
-            <button class="difficulty-btn" onclick="setDifficulty('easy')">Easy</button>
-            <button class="difficulty-btn" onclick="setDifficulty('medium')">Medium</button>
-            <button class="difficulty-btn" onclick="setDifficulty('hard')">Hard</button>
+            <p>Vyberte obtížnost:</p>
+            <button class="difficulty-btn" onclick="setDifficulty('easy')">Lehká</button>
+            <button class="difficulty-btn" onclick="setDifficulty('medium')">Střední</button>
+            <button class="difficulty-btn" onclick="setDifficulty('hard')">Těžká</button>
 
             <div id="race-options" style="margin-top: 20px;">
-                <p>Laps:
+                <p>Kola:
                     <select id="lap-select">
-                        <option value="1">1 Lap</option>
-                        <option value="3">3 Laps</option>
-                        <option value="5">5 Laps</option>
+                        <option value="1">1 kolo</option>
+                        <option value="3">3 kola</option>
+                        <option value="5">5 kol</option>
                     </select>
                 </p>
-                <button onclick="startGame('race')" id="start-race-btn">Start Race</button>
-                <button onclick="startGame('practice')" id="start-practice-btn">Free Practice</button>
+                <button onclick="startGame('race')" id="start-race-btn">Závodit</button>
+                <button onclick="startGame('practice')" id="start-practice-btn">Trénink</button>
             </div>
         </div>
 
         <div id="race-track-container">
-            <div id="lap-counter" style="display:none;">Lap: <span id="current-lap">1</span> / <span id="total-laps">1</span></div>
+            <div id="lap-counter" style="display:none;">Kolo: <span id="current-lap">1</span> / <span id="total-laps">1</span></div>
             <svg id="race-track-svg" viewBox="0 0 800 400">
                 <!-- Track path will be defined here -->
                 <path id="track-path" d="M 100,200 C 100,50 400,50 400,200 C 400,350 700,350 700,200 C 700,50 400,50 100,200 Z" fill="none" stroke="#555" stroke-width="60" />
@@ -43,15 +43,15 @@
 
         <div id="typing-area" style="display:none;">
             <div id="sentence-display"></div>
-            <input type="text" id="typing-input" placeholder="Start typing here..." autocomplete="off">
+            <input type="text" id="typing-input" placeholder="Začněte psát zde..." autocomplete="off">
         </div>
 
         <div id="results" style="display:none;">
-            <h2>Race Results</h2>
+            <h2>Výsledky závodu</h2>
             <p id="winner-text"></p>
-            <p>Accuracy: <span id="accuracy-val">0</span>%</p>
+            <p>Přesnost: <span id="accuracy-val">0</span>%</p>
             <p>CPM: <span id="cpm-val">0</span></p>
-            <button onclick="resetGame()">Play Again</button>
+            <button onclick="resetGame()">Hrát znovu</button>
         </div>
     </div>
     <script src="game.js"></script>
