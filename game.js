@@ -36,33 +36,35 @@ function setDifficulty(d) {
     });
 }
 
-async function fetchSentence() {
-    const czechSentences = [
-        "Příliš žluťoučký kůň úpěl ďábelské ódy.",
+function fetchSentence() {
+    const sentences = [
         "Rychlá hnědá liška přeskakuje líného psa.",
-        "Kdo jinému jámu kopá, sám do ní padá.",
-        "Bez práce nejsou koláče, praví staré české přísloví.",
-        "Veselé vánoce a šťastný nový rok všem lidem dobré vůle.",
-        "Programování je umění řešit problémy pomocí logického myšlení.",
-        "Česká republika leží v samotném srdci Evropy.",
-        "Sportovní auta dosahují na závodních okruzích vysokých rychlostí.",
-        "Psaní všemi deseti prsty výrazně zvyšuje efektivitu práce.",
-        "Učení se novým dovednostem vyžaduje čas a vytrvalost.",
-        "Na vrcholu hory byl krásný výhled do širého okolí.",
-        "Vltava je nejdelší řeka na území České republiky.",
-        "Karel IV. byl jedním z nejvýznamnějších českých panovníků.",
-        "Dnes je venku krásné slunečné počasí ideální na procházku.",
-        "Pravidelné cvičení pomáhá udržovat tělo i mysl v kondici.",
-        "Trpělivost přináší růže, nezapomínejte na to při tréninku.",
-        "Praha je známá jako město sta věží a historických památek.",
-        "Technologie se mění rychleji, než si dokážeme představit.",
-        "Dobrý programátor píše kód, který je snadno čitelný pro ostatní.",
-        "Závodění vyžaduje maximální soustředění a rychlé reakce."
+        "Závodění není jen o rychlosti, ale také o soustředění a přesnosti.",
+        "Abyste skončili první, musíte nejprve závod dokončit.",
+        "Sledujte cestu a mějte ruce pevně na klávesnici.",
+        "Rychlé psaní je jako řazení rychlostních stupňů v závodním autě.",
+        "Vítězství patří tomu, kdo udělá nejméně chyb.",
+        "Motor řve, když na semaforu naskočí zelená pro poslední kolo.",
+        "Cvičení dělá mistra, pokud jde o dovednosti v psaní všemi deseti.",
+        "Pravidelný rytmus je důležitější než náhlý příval rychlosti.",
+        "Dav jásá, když vedoucí jezdec projíždí cílem.",
+        "Formule jedna mohou na dlouhých rovinkách dosáhnout neuvěřitelných rychlostí.",
+        "Soustřeďte se nejprve na přesnost a rychlost se dostaví sama.",
+        "Každý napsaný znak vás přibližuje k šachovnicovému praporku.",
+        "Nedívejte se zpět, soupeř vám dýchá na záda.",
+        "Pneumatiky skřípou, když auto projíždí ostrou zatáčku ve vysoké rychlosti.",
+        "Šampionát je na dosah pro ty nejoddanější hráče.",
+        "Moderní technologie nám umožňují simulovat realistické závodní prostředí.",
+        "Kód je jako závodní dráha, musí být čistý a efektivní.",
+        "Pocit z dokonalého kola se nevyrovná ničemu jinému ve sportu.",
+        "Zůstaňte v klidu i pod tlakem, abyste si udrželi výkon v psaní.",
+        "Praha je hlavní a největší město České republiky.",
+        "Vltava je nejdelší řeka na území České republiky."
     ];
-    return czechSentences[Math.floor(Math.random() * czechSentences.length)];
+    return sentences[Math.floor(Math.random() * sentences.length)];
 }
 
-async function startGame(mode) {
+function startGame(mode) {
     gameMode = mode;
     totalLaps = parseInt(document.getElementById('lap-select').value);
 
@@ -82,13 +84,13 @@ async function startGame(mode) {
     aiCar.style.display = 'block';
     if (gameMode === 'race') {
         for (let i = 0; i < totalLaps; i++) {
-            const s = await fetchSentence();
+            const s = fetchSentence();
             raceSentences.push(s);
             totalRaceChars += s.length;
         }
         currentSentence = raceSentences[0];
     } else {
-        currentSentence = await fetchSentence();
+        currentSentence = fetchSentence();
         totalRaceChars = 150; // Reference for progress
         totalLaps = 1;
     }
@@ -168,7 +170,7 @@ function renderSentence(userInput) {
     }
 }
 
-typingInput.addEventListener('input', async () => {
+typingInput.addEventListener('input', () => {
     if (!gameActive) return;
 
     const val = typingInput.value;
@@ -186,7 +188,7 @@ typingInput.addEventListener('input', async () => {
             playerCharsCompleted += currentSentence.length;
             currentLap++;
             updateLapUI();
-            currentSentence = await fetchSentence();
+            currentSentence = fetchSentence();
             typingInput.value = "";
             renderSentence("");
         } else {
@@ -291,10 +293,10 @@ function winRace(winner) {
 
     resultsArea.style.display = 'block';
     if (winner === 'player') {
-        winnerText.innerText = "Vyhrál jste!";
+        winnerText.innerText = "Vyhrál jsi!";
         winnerText.style.color = "#2ecc71";
     } else {
-        winnerText.innerText = "AI vyhrálo!";
+        winnerText.innerText = "AI vyhrála!";
         winnerText.style.color = "#e74c3c";
     }
 

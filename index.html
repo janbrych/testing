@@ -8,7 +8,7 @@
 </head>
 <body>
     <div id="game-container">
-        <h1>Písařský závod</h1>
+        <h1>Type Racer</h1>
         <div id="countdown"></div>
 
         <div id="difficulty-selection">
@@ -18,14 +18,14 @@
             <button class="difficulty-btn" onclick="setDifficulty('hard')">Těžká</button>
 
             <div id="race-options" style="margin-top: 20px;">
-                <p>Kola:
+                <p>Počet kol:
                     <select id="lap-select">
                         <option value="1">1 kolo</option>
                         <option value="3">3 kola</option>
                         <option value="5">5 kol</option>
                     </select>
                 </p>
-                <button onclick="startGame('race')" id="start-race-btn">Závodit</button>
+                <button onclick="startGame('race')" id="start-race-btn">Závod!</button>
                 <button onclick="startGame('practice')" id="start-practice-btn">Trénink</button>
             </div>
         </div>
@@ -33,9 +33,13 @@
         <div id="race-track-container">
             <div id="lap-counter" style="display:none;">Kolo: <span id="current-lap">1</span> / <span id="total-laps">1</span></div>
             <svg id="race-track-svg" viewBox="0 0 800 400">
-                <!-- Track path will be defined here -->
-                <path id="track-path" d="M 100,200 C 100,50 400,50 400,200 C 400,350 700,350 700,200 C 700,50 400,50 100,200 Z" fill="none" stroke="#555" stroke-width="60" />
-                <path id="track-center-line" d="M 100,200 C 100,50 400,50 400,200 C 400,350 700,350 700,200 C 700,50 400,50 100,200 Z" fill="none" stroke="#fff" stroke-width="2" stroke-dasharray="10,10" />
+                <!-- Complex winding track path -->
+                <!-- Outer road surface -->
+                <path id="track-surface" d="M 100,200 C 100,100 250,50 400,100 S 550,250 700,200 S 700,350 400,350 S 100,300 100,200" fill="none" stroke="#555" stroke-width="70" />
+                <!-- The actual path the cars follow -->
+                <path id="track-path" d="M 100,200 C 100,100 250,50 400,100 S 550,250 700,200 S 700,350 400,350 S 100,300 100,200" fill="none" stroke="transparent" stroke-width="60" />
+                <!-- Road markings -->
+                <path id="track-center-line" d="M 100,200 C 100,100 250,50 400,100 S 550,250 700,200 S 700,350 400,350 S 100,300 100,200" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2" stroke-dasharray="20,15" />
             </svg>
             <div id="player-car" class="car"></div>
             <div id="ai-car" class="car"></div>

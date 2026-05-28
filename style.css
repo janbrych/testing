@@ -14,16 +14,16 @@ body {
     padding: 2rem;
     border-radius: 10px;
     box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-    width: 80%;
-    max-width: 800px;
+    width: 90%;
+    max-width: 900px;
     text-align: center;
 }
 
 #race-track-container {
     position: relative;
-    width: 100%;
-    height: 450px;
-    margin: 20px 0;
+    width: 800px;
+    height: 400px;
+    margin: 20px auto;
     background-color: #27ae60; /* Grass color around track */
     border-radius: 10px;
     overflow: hidden;
@@ -42,7 +42,7 @@ body {
     background-size: 1000% 200%; /* 10x2 spritesheet */
     background-repeat: no-repeat;
     transform-origin: center;
-    mix-blend-mode: multiply; /* Try to hide white background on the dark track */
+    mix-blend-mode: multiply; /* Hide white background on the track */
 }
 
 #player-car {
