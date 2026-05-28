@@ -1,98 +1,121 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="cs">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Type Racer - Typing Speed Game</title>
+    <title>TypeRacer - Závody v psaní</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Mono&display=swap" rel="stylesheet">
 </head>
 <body>
     <div id="game-container">
-        <h1>TYPE RACER</h1>
-        <div id="countdown"></div>
-
-        <div id="overlay-container">
-            <div id="difficulty-selection" class="overlay-content">
-                <h2>NASTAVENÍ ZÁVODU</h2>
-                <div class="setting-group">
-                    <p>Vyberte obtížnost:</p>
-                    <div class="btn-group">
-                        <button class="difficulty-btn" onclick="setDifficulty('easy')">Lehká</button>
-                        <button class="difficulty-btn active" onclick="setDifficulty('medium')">Střední</button>
-                        <button class="difficulty-btn" onclick="setDifficulty('hard')">Těžká</button>
-                    </div>
+        <div id="race-arena">
+            <!-- HUD with stats -->
+            <div id="hud">
+                <div class="hud-item">
+                    <span class="hud-label">Pozice</span>
+                    <span class="hud-value" id="pos-val">1</span>
                 </div>
-
-                <div class="setting-group">
-                    <p>Počet kol:</p>
-                    <div class="lap-selection">
-                        <button class="lap-btn" onclick="setLaps(1)">1 Kolo</button>
-                        <button class="lap-btn active" onclick="setLaps(3)">3 Kola</button>
-                        <button class="lap-btn" onclick="setLaps(5)">5 Kol</button>
-                    </div>
+                <div class="hud-item">
+                    <span class="hud-label">Kolo</span>
+                    <span class="hud-value"><span id="lap-val">1</span>/<span id="total-laps-hud">3</span></span>
                 </div>
-
-                <div id="personal-best-menu">Osobní rekord: <span id="pb-val-menu">0</span> CPM</div>
-
-                <div class="menu-buttons">
-                    <button onclick="startGame('race')" id="start-race-btn" class="main-btn">START ZÁVODU</button>
-                    <button onclick="startGame('practice')" id="start-practice-btn" class="secondary-btn">TRÉNINK</button>
+                <div class="hud-item">
+                    <span class="hud-label">Rychlost (CPM)</span>
+                    <span class="hud-value" id="speed-val">0</span>
+                    <div id="nitro-container"><div id="nitro-bar"></div></div>
                 </div>
             </div>
 
-            <div id="results" class="overlay-content" style="display:none;">
-                <h2 id="result-title">ZÁVOD DOKONČEN</h2>
-                <div id="medal-icon">🏆</div>
-                <p id="winner-text"></p>
-                <div class="stats">
-                    <div class="stat-box">
-                        <span class="stat-label">PŘESNOST</span>
-                        <span id="accuracy-val" class="stat-value">0</span><span class="unit">%</span>
-                    </div>
-                    <div class="stat-box">
-                        <span class="stat-label">RYCHLOST</span>
-                        <span id="cpm-val" class="stat-value">0</span><span class="unit">CPM</span>
-                    </div>
-                </div>
-                <div id="new-best-msg" style="display:none; color: #ffcc00; margin-bottom: 10px; font-weight: bold;">NOVÝ OSOBNÍ REKORD!</div>
-                <button onclick="resetGame()" class="main-btn">ODVETA</button>
-            </div>
-        </div>
-
-        <div id="race-track-container">
-            <div id="hud" style="display:none;">
-                <div class="hud-item">POŘADÍ: <span id="pos-val">1</span>/2</div>
-                <div class="hud-item">KOLO: <span id="lap-val">1</span>/<span id="total-laps-hud">3</span></div>
-                <div class="hud-item">RYCHLOST: <span id="speed-val">0</span> km/h</div>
-                <div id="nitro-container">
-                    <div id="nitro-label">NITRO</div>
-                    <div id="nitro-bar-bg">
-                        <div id="nitro-bar"></div>
-                    </div>
-                </div>
-            </div>
-
-            <svg id="race-track-svg" viewBox="0 0 1536 1024">
+            <!-- SVG Track -->
+            <svg id="track-svg" viewBox="0 0 1536 1024" preserveAspectRatio="xMidYMid meet">
                 <defs>
-                    <filter id="remove-white" x="0" y="0" width="100%" height="100%">
-                        <feColorMatrix type="matrix" values="1 0 0 0 0
-                                                             0 1 0 0 0
-                                                             0 0 1 0 0
-                                                             -1.5 -1.5 -1.5 1 3.5" />
-                    </filter>
+                    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                        <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
+                    </pattern>
                 </defs>
-                <path id="track-path" d="M 456,645 L 1150,645 C 1380,645 1450,560 1350,500 C 1250,440 1000,440 850,440 C 700,440 700,340 850,340 C 1000,340 1350,340 1420,250 C 1490,160 1350,160 1150,160 L 400,160 C 150,160 100,350 100,410 C 100,470 150,645 400,645 L 456,645" fill="none" stroke="rgba(255,255,255,0)" stroke-width="1" />
+                <rect width="100%" height="100%" fill="url(#grid)" />
+
+                <!-- Shadow/Glow of the track -->
+                <path id="track-path-glow" d="M100,800 C100,800 200,950 500,900 C800,850 900,600 700,500 C500,400 300,600 200,400 C100,200 400,100 800,150 C1200,200 1400,400 1400,600 C1400,800 1200,900 1000,850 C800,800 800,700 1000,650 C1200,600 1300,700 1200,800 C1100,900 300,850 100,800 Z"
+                    fill="none" stroke="rgba(241, 196, 15, 0.1)" stroke-width="90" stroke-linecap="round" />
+
+                <!-- Asphalt Base -->
+                <path id="track-base" d="M100,800 C100,800 200,950 500,900 C800,850 900,600 700,500 C500,400 300,600 200,400 C100,200 400,100 800,150 C1200,200 1400,400 1400,600 C1400,800 1200,900 1000,850 C800,800 800,700 1000,650 C1200,600 1300,700 1200,800 C1100,900 300,850 100,800 Z"
+                    fill="none" stroke="#333" stroke-width="80" stroke-linecap="round" />
+
+                <!-- Lane Inner -->
+                <path id="track-lane" d="M100,800 C100,800 200,950 500,900 C800,850 900,600 700,500 C500,400 300,600 200,400 C100,200 400,100 800,150 C1200,200 1400,400 1400,600 C1400,800 1200,900 1000,850 C800,800 800,700 1000,650 C1200,600 1300,700 1200,800 C1100,900 300,850 100,800 Z"
+                    fill="none" stroke="#444" stroke-width="70" stroke-linecap="round" />
+
+                <!-- Dashed Center Line -->
+                <path id="track-path" d="M100,800 C100,800 200,950 500,900 C800,850 900,600 700,500 C500,400 300,600 200,400 C100,200 400,100 800,150 C1200,200 1400,400 1400,600 C1400,800 1200,900 1000,850 C800,800 800,700 1000,650 C1200,600 1300,700 1200,800 C1100,900 300,850 100,800 Z"
+                    fill="none" stroke="#eee" stroke-width="2" stroke-dasharray="20,30" />
             </svg>
+
+            <!-- Cars -->
             <div id="player-car" class="car"></div>
-            <div id="ai-car" class="car"></div>
+            <div id="ai-car" class="car" style="display: none;"></div>
+
+            <!-- Countdown -->
+            <div id="countdown"></div>
         </div>
 
-        <div id="typing-area" style="display:none;">
-            <div id="sentence-display"></div>
-            <input type="text" id="typing-input" placeholder="Pište text výše pro zrychlení..." autocomplete="off">
+        <!-- Start/Menu Overlay -->
+        <div id="overlay-container">
+            <div id="main-menu" class="menu-card">
+                <h1>TYPERACER CZ</h1>
+                <p class="tagline">Závoďte s časem i soupeři pomocí svého psaní!</p>
+
+                <div id="difficulty-selection">
+                    <span class="label-small">Obtížnost AI</span>
+                    <div class="option-group">
+                        <button class="difficulty-btn option-btn" onclick="setDifficulty('easy')">Lehká</button>
+                        <button class="difficulty-btn option-btn active" onclick="setDifficulty('medium')">Střední</button>
+                        <button class="difficulty-btn option-btn" onclick="setDifficulty('hard')">Těžká</button>
+                    </div>
+
+                    <span class="label-small" style="margin-top: 15px;">Počet kol</span>
+                    <div class="option-group">
+                        <button class="lap-btn option-btn" onclick="setLaps(1)">1</button>
+                        <button class="lap-btn option-btn active" onclick="setLaps(3)">3</button>
+                        <button class="lap-btn option-btn" onclick="setLaps(5)">5</button>
+                    </div>
+                </div>
+
+                <div id="results" class="menu-card" style="display: none; box-shadow: none; padding: 0;">
+                    <div id="medal-icon" style="font-size: 4rem; margin-bottom: 10px;">🏆</div>
+                    <h2 id="winner-text">VYHRÁL JSTE!</h2>
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <span class="stat-val" id="cpm-val">0</span>
+                            <span class="stat-label">CPM</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-val" id="accuracy-val">0</span>
+                            <span class="stat-label">% Přesnost</span>
+                        </div>
+                    </div>
+                    <p id="new-best-msg" style="color: #f1c40f; display: none; margin-bottom: 15px; font-weight: bold;">NOVÝ OSOBNÍ REKORD!</p>
+                </div>
+
+                <div class="btn-group" style="margin-top: 30px;">
+                    <button class="main-btn" onclick="startGame('race')">ZÁVODIT</button>
+                    <button class="secondary-btn" onclick="startGame('practice')">TRÉNINK</button>
+                </div>
+
+                <div style="margin-top: 20px; font-size: 0.8rem; color: #8892b0;">
+                    Osobní rekord: <span id="pb-val-menu">0</span> CPM
+                </div>
+            </div>
         </div>
     </div>
+
+    <!-- Typing Area -->
+    <div id="typing-area">
+        <div id="sentence-display">Načítání...</div>
+        <input type="text" id="typing-input" placeholder="Pište text výše pro zrychlení..." autocomplete="off" spellcheck="false">
+    </div>
+
     <script src="game.js"></script>
 </body>
 </html>

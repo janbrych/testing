@@ -15,7 +15,7 @@ let playerCharsCompleted = 0;
 
 const playerCar = document.getElementById('player-car');
 const aiCar = document.getElementById('ai-car');
-const gameContainer = document.getElementById('game-container');
+const raceArena = document.getElementById('race-arena');
 const trackPath = document.getElementById('track-path');
 const sentenceDisplay = document.getElementById('sentence-display');
 const typingInput = document.getElementById('typing-input');
@@ -152,7 +152,6 @@ function fetchSentence() {
 
 function startGame(mode) {
     gameMode = mode;
-    // totalLaps is already set by setLaps() or default
 
     document.getElementById('overlay-container').style.display = 'none';
     document.getElementById('difficulty-selection').style.display = 'none';
@@ -301,10 +300,10 @@ typingInput.addEventListener('input', () => {
 
 function flashError() {
     sentenceDisplay.classList.add('error-flash');
-    gameContainer.classList.add('shake');
+    raceArena.classList.add('shake');
     setTimeout(() => {
         sentenceDisplay.classList.remove('error-flash');
-        gameContainer.classList.remove('shake');
+        raceArena.classList.remove('shake');
     }, 100);
 }
 
@@ -417,10 +416,13 @@ function updateCarPositions(playerLapProgress, aiLapProgress) {
     playerLastAngle = pAngle;
     aiLastAngle = aAngle;
 
-    // Center cars in lanes (offset from track path)
-    // We use percentages based on the 1536x1024 SVG viewBox
-    playerCar.style.left = `${(pPoint.x / 1536) * 100}%`;
-    playerCar.style.top = `${(pPoint.y / 1024) * 100}%`;
+    // Arena dimensions for relative positioning
+    const arenaRect = raceArena.getBoundingClientRect();
+    const svgViewBoxWidth = 1536;
+    const svgViewBoxHeight = 1024;
+
+    playerCar.style.left = `${(pPoint.x / svgViewBoxWidth) * 100}%`;
+    playerCar.style.top = `${(pPoint.y / svgViewBoxHeight) * 100}%`;
     playerCar.style.transform = `translate(-50%, -50%) rotate(${pAngle}deg)`;
 
     // AI car offset slightly to the side to simulate lanes
@@ -429,8 +431,8 @@ function updateCarPositions(playerLapProgress, aiLapProgress) {
     const offsetX = Math.cos(aRad + Math.PI / 2) * aiLaneOffset;
     const offsetY = Math.sin(aRad + Math.PI / 2) * aiLaneOffset;
 
-    aiCar.style.left = `${((aPoint.x + offsetX) / 1536) * 100}%`;
-    aiCar.style.top = `${((aPoint.y + offsetY) / 1024) * 100}%`;
+    aiCar.style.left = `${((aPoint.x + offsetX) / svgViewBoxWidth) * 100}%`;
+    aiCar.style.top = `${((aPoint.y + offsetY) / svgViewBoxHeight) * 100}%`;
     aiCar.style.transform = `translate(-50%, -50%) rotate(${aAngle}deg)`;
 }
 
