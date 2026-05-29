@@ -47,6 +47,66 @@ body {
     transition: transform 0.1s linear;
 }
 
+.boost-active {
+    filter: drop-shadow(0 0 15px #00ffff) brightness(1.5);
+}
+
+.speed-lines {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 5;
+    opacity: 0;
+    transition: opacity 0.3s;
+    background: radial-gradient(circle, transparent 30%, rgba(255,255,255,0.2) 100%);
+}
+
+.boost-word {
+    background: #2563eb !important;
+    color: #ffffff !important;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 800;
+    animation: pulse-boost 0.5s infinite;
+}
+
+@keyframes pulse-boost {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.combo-counter {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    font-size: 3rem;
+    font-weight: 900;
+    color: #2563eb;
+    opacity: 0;
+    transition: transform 0.2s, opacity 0.2s;
+    pointer-events: none;
+    z-index: 100;
+    text-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
+}
+
+.combo-active {
+    opacity: 1;
+    transform: scale(1.2);
+}
+
+.particle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: rgba(0,0,0,0.1);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
 .car-body {
     transition: fill 0.3s;
 }

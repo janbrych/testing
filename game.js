@@ -16,6 +16,10 @@ let playerCharsCompleted = 0;
 let playerCurrentDistance = 0;
 let aiCurrentDistance = 0;
 let lastFrameTime = 0;
+let comboCount = 0;
+let boostActive = false;
+let boostTimer = 0;
+let isBoostWord = false;
 
 const playerCar = document.getElementById('player-car');
 const aiCar = document.getElementById('ai-car');
@@ -288,6 +292,10 @@ function renderSentence(userInput) {
     sentenceDisplay.innerHTML = "";
     let correctSoFar = true;
 
+    const wrapper = document.createElement('div');
+    wrapper.style.display = 'inline-block';
+    if (isBoostWord) wrapper.classList.add('boost-word');
+
     for (let i = 0; i < currentSentence.length; i++) {
         const span = document.createElement('span');
         const char = currentSentence[i];
@@ -306,8 +314,9 @@ function renderSentence(userInput) {
             span.classList.add('incorrect');
             correctSoFar = false;
         }
-        sentenceDisplay.appendChild(span);
+        wrapper.appendChild(span);
     }
+    sentenceDisplay.appendChild(wrapper);
 }
 
 typingInput.addEventListener('input', () => {
@@ -319,6 +328,7 @@ typingInput.addEventListener('input', () => {
     if (val.length > 0 && val[val.length - 1] !== currentSentence[val.length - 1]) {
         errors++;
         flashError();
+        resetCombo();
         // Velocity reduction penalty
         playerCharsCompleted = Math.max(0, playerCharsCompleted - 1);
     }
@@ -331,12 +341,45 @@ typingInput.addEventListener('input', () => {
 
         playerCharsCompleted += currentSentence.length;
 
+        if (isBoostWord) triggerBoost();
+        incrementCombo();
+
         // Cycle sentences continuously
         currentSentence = fetchSentence();
+        // Randomly make next word a boost word (20% chance)
+        isBoostWord = Math.random() < 0.2;
+
         typingInput.value = "";
         renderSentence("");
     }
 });
+
+function incrementCombo() {
+    comboCount++;
+    const comboUI = document.getElementById('combo-ui');
+    comboUI.innerText = comboCount + "x";
+    comboUI.classList.add('combo-active');
+    setTimeout(() => comboUI.classList.remove('combo-active'), 200);
+
+    if (comboCount > 0) comboUI.style.opacity = 1;
+}
+
+function resetCombo() {
+    comboCount = 0;
+    const comboUI = document.getElementById('combo-ui');
+    comboUI.style.opacity = 0;
+}
+
+function triggerBoost() {
+    boostActive = true;
+    boostTimer = 3.0; // 3 seconds of boost
+    document.getElementById('speed-lines').style.opacity = 1;
+    playerCar.classList.add('boost-active');
+
+    // Camera shake
+    raceArena.classList.add('shake');
+    setTimeout(() => raceArena.classList.remove('shake'), 500);
+}
 
 function flashError() {
     sentenceDisplay.classList.add('error-flash');
@@ -362,7 +405,18 @@ function updateGame() {
 
     // Player CPM calculation
     const currentCPM = Math.round((totalCharsTyped / (elapsedSeconds / 60)) || 0);
-    const speed = Math.min(500, Math.round(currentCPM * 0.9 + idlingCPM));
+
+    if (boostActive) {
+        boostTimer -= deltaTimeSeconds;
+        if (boostTimer <= 0) {
+            boostActive = false;
+            document.getElementById('speed-lines').style.opacity = 0;
+            playerCar.classList.remove('boost-active');
+        }
+    }
+
+    const boostMultiplier = boostActive ? 1.5 : 1.0;
+    const speed = Math.min(700, Math.round((currentCPM * 0.9 + idlingCPM) * boostMultiplier));
     speedVal.innerText = speed;
 
     // Nitro logic
@@ -382,7 +436,7 @@ function updateGame() {
     }
 
     // Nitro boost effect on progress
-    const nitroBoost = nitroAmount > 80 ? 1.3 : 1.0;
+    const nitroBoost = (nitroAmount > 80 ? 1.3 : 1.0) * (boostActive ? 1.4 : 1.0);
 
     // Total distance based on characters typed + idling time
     // We assume an average race is ~300 characters per lap for progress scaling
@@ -448,6 +502,10 @@ function updateGame() {
     }
 
     updateCarPositions(pLapProgress, aLapProgress);
+
+    if (boostActive && Math.random() > 0.5) {
+        createParticle(playerCar);
+    }
 
     // Audio update
     const isTurning = Math.abs(playerLastAngle - playerCar.dataset.prevAngle || 0) > 2;
@@ -564,10 +622,61 @@ function winRace(winner) {
         document.getElementById('accuracy-val').innerText = accuracy;
         document.getElementById('cpm-val').innerText = cpm;
 
+        // Ranking Logic
+        let rank = 'C';
+        if (accuracy > 95 && cpm > 450) rank = 'S';
+        else if (accuracy > 90 && cpm > 350) rank = 'A';
+        else if (accuracy > 80 && cpm > 250) rank = 'B';
+
+        const rankEl = document.getElementById('rank-display');
+        rankEl.innerText = rank;
+        const rankColors = { 'S': '#f59e0b', 'A': '#2563eb', 'B': '#10b981', 'C': '#64748b' };
+        rankEl.style.color = rankColors[rank];
+
         // Update labels in results
         document.querySelectorAll('.stat-label')[0].innerText = "CPM";
         document.querySelectorAll('.stat-label')[1].innerText = isEn ? "% Accuracy" : "% Přesnost";
     }, 1000);
+}
+
+function createParticle(car) {
+    const transform = car.getAttribute('transform');
+    const match = /translate\(([^,]+),\s*([^)]+)\)/.exec(transform);
+    if (!match) return;
+
+    const x = parseFloat(match[1]);
+    const y = parseFloat(match[2]);
+
+    const p = document.createElement('div');
+    p.className = 'particle';
+    // Map SVG coordinates to screen (rough approximation since it's responsive)
+    const rect = raceArena.getBoundingClientRect();
+    const screenX = (x / 1536) * rect.width;
+    const screenY = (y / 1024) * rect.height;
+
+    p.style.left = screenX + 'px';
+    p.style.top = screenY + 'px';
+    p.style.background = boostActive ? '#00ffff' : '#cbd5e1';
+
+    raceArena.appendChild(p);
+
+    const angle = (Math.random() * Math.PI * 2);
+    const speed = 1 + Math.random() * 2;
+    let opacity = 1;
+
+    const anim = setInterval(() => {
+        const curLeft = parseFloat(p.style.left);
+        const curTop = parseFloat(p.style.top);
+        p.style.left = (curLeft + Math.cos(angle) * speed) + 'px';
+        p.style.top = (curTop + Math.sin(angle) * speed) + 'px';
+        opacity -= 0.05;
+        p.style.opacity = opacity;
+
+        if (opacity <= 0) {
+            clearInterval(anim);
+            p.remove();
+        }
+    }, 30);
 }
 
 function resetGame() {
