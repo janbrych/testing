@@ -33,8 +33,8 @@ let playerLastAngle = 0;
 let aiLastAngle = 0;
 let nitroAmount = 0;
 
-let selectedCarIndex = 8; // Default to 9th car (index 8)
-const totalCarsAvailable = 20; // 10 columns * 2 rows
+let selectedCarColor = "#2563eb";
+const carColors = ["#2563eb", "#ef4444", "#10b981", "#f59e0b", "#8b5cf6", "#ec4899"];
 
 // Audio System
 let audioCtx;
@@ -112,34 +112,33 @@ window.addEventListener('load', () => {
 
 function initCarSelection() {
     const container = document.getElementById('car-selection');
-    const carsToShow = [0, 1, 3, 8, 10, 12, 14, 18]; // Selection of nice cars
 
-    carsToShow.forEach(idx => {
+    carColors.forEach(color => {
         const btn = document.createElement('div');
         btn.className = 'car-option';
-        if (idx === selectedCarIndex) btn.classList.add('active');
+        btn.style.backgroundColor = color;
+        if (color === selectedCarColor) btn.classList.add('active');
 
-        // Calculate background position for preview
-        const col = idx % 10;
-        const row = Math.floor(idx / 10);
-        btn.style.backgroundPosition = `-${col * 40}px -${row * 80}px`;
-
-        btn.onclick = () => selectCar(idx);
+        btn.onclick = () => selectCar(color);
         container.appendChild(btn);
     });
 }
 
-function selectCar(idx) {
-    selectedCarIndex = idx;
-    document.querySelectorAll('.car-option').forEach((btn, i) => {
-        const carsToShow = [0, 1, 3, 8, 10, 12, 14, 18];
-        btn.classList.toggle('active', carsToShow[i] === idx);
+function selectCar(color) {
+    selectedCarColor = color;
+    document.querySelectorAll('.car-option').forEach(btn => {
+        btn.classList.toggle('active', btn.style.backgroundColor === hexToRgb(color));
     });
 
     // Update player car visual
-    const col = idx % 10;
-    const row = Math.floor(idx / 10);
-    playerCar.style.backgroundPosition = `-${col * 50}px -${row * 100}px`;
+    const body = playerCar.querySelector('.car-body');
+    if (body) body.setAttribute('fill', color);
+}
+
+function hexToRgb(hex) {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    if (!result) return "";
+    return `rgb(${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)})`;
 }
 
 function setDifficulty(d) {
@@ -218,13 +217,12 @@ function startGame(mode) {
     aiCar.style.display = 'block';
 
     // Set Player Car
-    selectCar(selectedCarIndex);
+    selectCar(selectedCarColor);
 
     // Randomize AI Car
-    const aiIdx = Math.floor(Math.random() * totalCarsAvailable);
-    const aiCol = aiIdx % 10;
-    const aiRow = Math.floor(aiIdx / 10);
-    aiCar.style.backgroundPosition = `-${aiCol * 50}px -${aiRow * 100}px`;
+    const aiColor = carColors[Math.floor(Math.random() * carColors.length)];
+    const aiBody = aiCar.querySelector('.car-body');
+    if (aiBody) aiBody.setAttribute('fill', aiColor);
 
     currentSentence = fetchSentence();
 
@@ -417,10 +415,14 @@ function updateGame() {
         posVal.innerText = playerVisualProgress >= aiVisualProgress ? "1" : "2";
 
         if (playerVisualProgress >= 1) {
+        playerVisualProgress = 1;
+        updateCarPositions(1 % 1, aLapProgress); // Snap to finish
             winRace('player');
             return;
         }
         if (aiVisualProgress >= 1) {
+        aiVisualProgress = 1;
+        updateCarPositions(pLapProgress, 1 % 1); // Snap to finish
             winRace('ai');
             return;
         }
@@ -472,19 +474,24 @@ function updateCarPositions(playerLapProgress, aiLapProgress) {
     const svgViewBoxWidth = 1536;
     const svgViewBoxHeight = 1024;
 
-    playerCar.style.left = `${(pPoint.x / svgViewBoxWidth) * 100}%`;
-    playerCar.style.top = `${(pPoint.y / svgViewBoxHeight) * 100}%`;
-    playerCar.style.transform = `translate(-50%, -50%) rotate(${pAngle}deg)`;
+    // SVG transform: Use matrix or translate/rotate directly on elements
+    playerCar.setAttribute('transform', `translate(${pPoint.x}, ${pPoint.y}) rotate(${pAngle})`);
+
+    // Player car offset
+    const playerLaneOffset = -25;
+    const pRad = (pAngle - 90) * Math.PI / 180;
+    const pOffsetX = Math.cos(pRad + Math.PI / 2) * playerLaneOffset;
+    const pOffsetY = Math.sin(pRad + Math.PI / 2) * playerLaneOffset;
+
+    playerCar.setAttribute('transform', `translate(${pPoint.x + pOffsetX}, ${pPoint.y + pOffsetY}) rotate(${pAngle})`);
 
     // AI car offset slightly to the side to simulate lanes
-    const aiLaneOffset = 15;
+    const aiLaneOffset = 25;
     const aRad = (aAngle - 90) * Math.PI / 180;
     const offsetX = Math.cos(aRad + Math.PI / 2) * aiLaneOffset;
     const offsetY = Math.sin(aRad + Math.PI / 2) * aiLaneOffset;
 
-    aiCar.style.left = `${((aPoint.x + offsetX) / svgViewBoxWidth) * 100}%`;
-    aiCar.style.top = `${((aPoint.y + offsetY) / svgViewBoxHeight) * 100}%`;
-    aiCar.style.transform = `translate(-50%, -50%) rotate(${aAngle}deg)`;
+    aiCar.setAttribute('transform', `translate(${aPoint.x + offsetX}, ${aPoint.y + offsetY}) rotate(${aAngle})`);
 }
 
 function smoothAngle(oldAngle, newAngle) {

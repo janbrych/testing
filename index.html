@@ -43,11 +43,19 @@
                 <!-- Finish Line -->
                 <line x1="200" y1="452" x2="200" y2="572" stroke="#2563eb" stroke-width="8" stroke-linecap="butt" />
                 <line x1="210" y1="452" x2="210" y2="572" stroke="#2563eb" stroke-width="2" stroke-dasharray="5,5" />
-            </svg>
 
-            <!-- Cars -->
-            <div id="player-car" class="car"></div>
-            <div id="ai-car" class="car" style="display: none;"></div>
+                <!-- SVG Cars -->
+                <g id="player-car" class="car-svg">
+                    <rect x="-15" y="-25" width="30" height="50" rx="8" class="car-body" fill="#2563eb" />
+                    <rect x="-12" y="-12" width="24" height="15" rx="3" fill="rgba(255,255,255,0.4)" />
+                    <rect x="-12" y="15" width="24" height="4" rx="1" fill="rgba(0,0,0,0.2)" />
+                </g>
+                <g id="ai-car" class="car-svg" style="display: none;">
+                    <rect x="-15" y="-25" width="30" height="50" rx="8" class="car-body" fill="#64748b" />
+                    <rect x="-12" y="-12" width="24" height="15" rx="3" fill="rgba(255,255,255,0.4)" />
+                    <rect x="-12" y="15" width="24" height="4" rx="1" fill="rgba(0,0,0,0.2)" />
+                </g>
+            </svg>
 
             <!-- Countdown -->
             <div id="countdown"></div>
