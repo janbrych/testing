@@ -64,25 +64,32 @@
         <!-- Start/Menu Overlay -->
         <div id="overlay-container">
             <div id="main-menu" class="menu-card">
-                <h1>TYPERACER CZ</h1>
-                <p class="tagline">Závoďte s časem i soupeři pomocí svého psaní!</p>
+                <h1 id="ui-title">TYPERACER CZ</h1>
+                <p class="tagline" id="ui-tagline">Závoďte s časem i soupeři pomocí svého psaní!</p>
 
                 <div id="difficulty-selection">
-                    <span class="label-small">Obtížnost AI</span>
+                    <span class="label-small" id="ui-language-label">Jazyk / Language</span>
                     <div class="option-group">
-                        <button class="difficulty-btn option-btn" onclick="setDifficulty('easy')">Lehká</button>
-                        <button class="difficulty-btn option-btn active" onclick="setDifficulty('medium')">Střední</button>
-                        <button class="difficulty-btn option-btn" onclick="setDifficulty('hard')">Těžká</button>
+                        <button class="lang-btn option-btn active" onclick="setLanguage('cs')">Čeština</button>
+                        <button class="lang-btn option-btn" onclick="setLanguage('en')">English</button>
                     </div>
 
-                    <span class="label-small" style="margin-top: 15px;">Počet kol</span>
+                    <span class="label-small" id="ui-difficulty-label" style="margin-top: 15px;">Obtížnost AI</span>
+                    <div class="option-group">
+                        <button class="difficulty-btn option-btn" onclick="setDifficulty('easy')" id="ui-diff-easy">Lehká</button>
+                        <button class="difficulty-btn option-btn active" onclick="setDifficulty('medium')" id="ui-diff-medium">Střední</button>
+                        <button class="difficulty-btn option-btn" onclick="setDifficulty('hard')" id="ui-diff-hard">Těžká</button>
+                        <button class="difficulty-btn option-btn" onclick="setDifficulty('wr')" id="ui-diff-wr">Světový Rekord</button>
+                    </div>
+
+                    <span class="label-small" id="ui-laps-label" style="margin-top: 15px;">Počet kol</span>
                     <div class="option-group">
                         <button class="lap-btn option-btn" onclick="setLaps(1)">1</button>
                         <button class="lap-btn option-btn active" onclick="setLaps(3)">3</button>
                         <button class="lap-btn option-btn" onclick="setLaps(5)">5</button>
                     </div>
 
-                    <span class="label-small" style="margin-top: 15px;">Vyberte si auto</span>
+                    <span class="label-small" id="ui-car-label" style="margin-top: 15px;">Vyberte si auto</span>
                     <div id="car-selection" class="option-group">
                         <!-- Cars will be injected by JS -->
                     </div>
@@ -111,7 +118,7 @@
                 </div>
 
                 <div style="margin-top: 20px; font-size: 0.8rem; color: #8892b0;">
-                    Osobní rekord: <span id="pb-val-menu">0</span> CPM
+                    <span id="ui-pb-label">Osobní rekord</span>: <span id="pb-val-menu">0</span> CPM
                 </div>
             </div>
         </div>
@@ -123,6 +130,7 @@
         <input type="text" id="typing-input" placeholder="Pište text výše pro zrychlení..." autocomplete="off" spellcheck="false">
     </div>
 
+    <script src="sentences.js"></script>
     <script src="game.js"></script>
 </body>
 </html>

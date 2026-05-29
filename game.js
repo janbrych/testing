@@ -1,4 +1,5 @@
 let currentSentence = "";
+let currentLanguage = 'cs';
 let raceSentences = [];
 let startTime;
 let gameActive = false;
@@ -152,6 +153,42 @@ function setDifficulty(d) {
     });
 }
 
+function setLanguage(lang) {
+    currentLanguage = lang;
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.getAttribute('onclick').includes(`'${lang}'`)) btn.classList.add('active');
+    });
+    updateUILanguage();
+}
+
+function updateUILanguage() {
+    const isEn = currentLanguage === 'en';
+
+    // UI Elements
+    document.getElementById('ui-title').innerText = isEn ? "TYPERACER EN" : "TYPERACER CZ";
+    document.getElementById('ui-tagline').innerText = isEn ? "Race against time and opponents with your typing!" : "Závoďte s časem i soupeři pomocí svého psaní!";
+    document.getElementById('ui-language-label').innerText = isEn ? "Language" : "Jazyk";
+    document.getElementById('ui-difficulty-label').innerText = isEn ? "AI Difficulty" : "Obtížnost AI";
+    document.getElementById('ui-diff-easy').innerText = isEn ? "Easy" : "Lehká";
+    document.getElementById('ui-diff-medium').innerText = isEn ? "Medium" : "Střední";
+    document.getElementById('ui-diff-hard').innerText = isEn ? "Hard" : "Těžká";
+    document.getElementById('ui-diff-wr').innerText = isEn ? "World Record" : "Světový Rekord";
+    document.getElementById('ui-laps-label').innerText = isEn ? "Number of Laps" : "Počet kol";
+    document.getElementById('ui-pb-label').innerText = isEn ? "Personal Best" : "Osobní rekord";
+    document.getElementById('ui-car-label').innerText = isEn ? "Choose your car" : "Vyberte si auto";
+
+    document.getElementById('start-btn').innerText = isEn ? "RACE" : "ZÁVODIT";
+    document.getElementById('practice-btn').innerText = isEn ? "PRACTICE" : "TRÉNINK";
+    document.getElementById('back-btn').innerText = isEn ? "BACK TO MENU" : "ZPĚT DO MENU";
+
+    document.querySelector('.hud-item:nth-child(1) .hud-label').innerText = isEn ? "Position" : "Pozice";
+    document.querySelector('.hud-item:nth-child(2) .hud-label').innerText = isEn ? "Lap" : "Kolo";
+    document.querySelector('.hud-item:nth-child(3) .hud-label').innerText = isEn ? "Speed (CPM)" : "Rychlost (CPM)";
+
+    document.getElementById('typing-input').placeholder = isEn ? "Type the text above to accelerate..." : "Pište text výše pro zrychlení...";
+}
+
 function setLaps(n) {
     totalLaps = n;
     document.querySelectorAll('.lap-btn').forEach(btn => {
@@ -161,44 +198,7 @@ function setLaps(n) {
 }
 
 function fetchSentence() {
-    const sentences = [
-        "Rychlá hnědá liška přeskakuje líného psa.",
-        "Závodění není jen o rychlosti, ale také o soustředění a přesnosti.",
-        "Abyste skončili první, musíte nejdříve dojet do cíle.",
-        "Sledujte cestu a držte ruce pevně na klávesnici.",
-        "Rychlé psaní je jako řazení rychlostních stupňů v závodním autě.",
-        "Vítězství patří tomu, kdo udělá nejméně chyb.",
-        "Motor řve, když zelené světlo signalizuje start posledního kola.",
-        "Cvičení dělá mistra, pokud jde o dovednosti psaní všemi deseti.",
-        "Pravidelný rytmus je důležitější než náhlý nárůst rychlosti.",
-        "Dav jásá, když vedoucí jezdec protne cílovou čáru.",
-        "Vozy formule jedna mohou na dlouhých rovinkách dosáhnout úžasných rychlostí.",
-        "Soustřeďte se nejdříve na přesnost a rychlost přijde sama.",
-        "Každý napsaný znak vás přibližuje k šachovnicové vlajce.",
-        "Nedívejte se zpět, soupeř vám dýchá na záda.",
-        "Pneumatiky skřípou, když auto projíždí ostrou zatáčku ve vysoké rychlosti.",
-        "Šampionát je na dosah pro ty nejoddanější hráče.",
-        "Moderní technologie nám umožňují simulovat realistická závodní prostředí.",
-        "Kód je jako závodní dráha, musí být čistý a efektivní.",
-        "Pocit z dokonalého kola se nevyrovná ničemu jinému ve sportu.",
-        "Zůstaňte v klidu pod tlakem, abyste si udrželi výkon při psaní.",
-        "Závodní dráha je náročné místo pro člověka i stroj.",
-        "Zrychlení je klíčem k předjíždění soupeřů na rovince.",
-        "Při psaní všemi deseti je důležité udržovat prsty v základní poloze.",
-        "Kvalitní mechanická klávesnice může výrazně zlepšit váš pocit z psaní.",
-        "Soustřeďte se na text před sebou a snažte se nedívat na své ruce.",
-        "Každá chyba vás stojí drahocenné sekundy v tomto napínavém závodě.",
-        "Adrenalin stoupá, když se přibližujete k poslední zatáčce před cílem.",
-        "Plynulost je často důležitější než syrová rychlost úhozů za minutu.",
-        "Vaše auto reaguje na každé správně napsané slovo okamžitým zrychlením.",
-        "V tréninkovém režimu můžete pilovat svou techniku bez tlaku soupeřů.",
-        "Závodní simulátory pomáhají profesionálním jezdcům učit se nové tratě.",
-        "Precizní brzdění a včasná akcelerace jsou základy rychlého kola.",
-        "Světlo světlometů prořezává tmu během nočního vytrvalostního závodu.",
-        "Týmová strategie hraje klíčovou roli v moderních automobilových závodech.",
-        "Aerodynamika vozu je navržena tak, aby poskytovala maximální přítlak.",
-        "V boxové uličce se počítá každá desetina sekundy při výměně kol."
-    ];
+    const sentences = sentencesPool[currentLanguage] || sentencesPool['cs'];
     return sentences[Math.floor(Math.random() * sentences.length)];
 }
 
@@ -209,7 +209,8 @@ function startGame(mode) {
     document.getElementById('difficulty-selection').style.display = 'none';
     document.getElementById('results').style.display = 'none';
 
-    sentenceDisplay.innerHTML = "<span style='color: #64748b'>Načítání...</span>";
+    const loadingText = currentLanguage === 'en' ? "Loading..." : "Načítání...";
+    sentenceDisplay.innerHTML = `<span style='color: #64748b'>${loadingText}</span>`;
     document.getElementById('typing-area').style.display = 'flex';
     typingInput.disabled = true;
     typingInput.value = "";
@@ -357,7 +358,7 @@ function updateGame() {
 
     // Steady slow pace (Idling)
     const idlingCPM = 80;
-    const aiCPMBase = { 'easy': 150, 'medium': 250, 'hard': 400 }[difficulty];
+    const aiCPMBase = { 'easy': 150, 'medium': 250, 'hard': 400, 'wr': 850 }[difficulty];
 
     // Player CPM calculation
     const currentCPM = Math.round((totalCharsTyped / (elapsedSeconds / 60)) || 0);
@@ -515,6 +516,7 @@ function updatePersonalBest(cpm) {
         localStorage.setItem('typeracer_pb', cpm);
         pbDisplayMenu.innerText = cpm;
         newBestMsg.style.display = 'block';
+        newBestMsg.innerText = currentLanguage === 'en' ? "NEW PERSONAL BEST!" : "NOVÝ OSOBNÍ REKORD!";
         return true;
     } else {
         newBestMsg.style.display = 'none';
@@ -546,13 +548,14 @@ function winRace(winner) {
     setTimeout(() => {
         document.getElementById('overlay-container').style.display = 'flex';
         resultsArea.style.display = 'block';
+        const isEn = currentLanguage === 'en';
         if (winner === 'player') {
-            winnerText.innerText = "VYHRÁL JSTE!";
+            winnerText.innerText = isEn ? "YOU WON!" : "VYHRÁL JSTE!";
             winnerText.style.color = "#2563eb";
             winnerText.style.textShadow = "none";
             document.getElementById('medal-icon').innerText = "🏆";
         } else {
-            winnerText.innerText = "AI VYHRÁLA!";
+            winnerText.innerText = isEn ? "AI WON!" : "AI VYHRÁLA!";
             winnerText.style.color = "#64748b";
             winnerText.style.textShadow = "none";
             document.getElementById('medal-icon').innerText = "🏁";
@@ -560,6 +563,10 @@ function winRace(winner) {
 
         document.getElementById('accuracy-val').innerText = accuracy;
         document.getElementById('cpm-val').innerText = cpm;
+
+        // Update labels in results
+        document.querySelectorAll('.stat-label')[0].innerText = "CPM";
+        document.querySelectorAll('.stat-label')[1].innerText = isEn ? "% Accuracy" : "% Přesnost";
     }, 1000);
 }
 
@@ -573,6 +580,7 @@ function resetGame() {
     document.getElementById('start-btn').style.display = 'block';
     document.getElementById('practice-btn').style.display = 'block';
     document.getElementById('back-btn').style.display = 'none';
+    document.getElementById('sentence-display').innerText = currentLanguage === 'en' ? "Loading..." : "Načítání...";
 
     // Reset state variables
     playerVisualProgress = 0;
