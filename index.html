@@ -105,8 +105,9 @@
                 </div>
 
                 <div class="btn-group" style="margin-top: 30px;">
-                    <button class="main-btn" onclick="startGame('race')">ZÁVODIT</button>
-                    <button class="secondary-btn" onclick="startGame('practice')">TRÉNINK</button>
+                    <button id="start-btn" class="main-btn" onclick="startGame('race')">ZÁVODIT</button>
+                    <button id="back-btn" class="secondary-btn" onclick="resetGame()" style="display: none;">ZPĚT DO MENU</button>
+                    <button id="practice-btn" class="secondary-btn" onclick="startGame('practice')">TRÉNINK</button>
                 </div>
 
                 <div style="margin-top: 20px; font-size: 0.8rem; color: #8892b0;">

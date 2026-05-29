@@ -350,7 +350,7 @@ function updateGame() {
     // Steady slow pace (Idling)
     const idlingCPM = 50;
 
-    const aiCPMBase = { 'easy': 160, 'medium': 240, 'hard': 380 }[difficulty];
+    const aiCPMBase = { 'easy': 120, 'medium': 200, 'hard': 320 }[difficulty];
 
     // AI Rubber-banding & Randomness
     let aiMultiplier = 1.0 + (Math.sin(elapsedSeconds * 0.5) * 0.05); // Slight fluctuation
@@ -396,9 +396,9 @@ function updateGame() {
 
     if (gameMode === 'race') {
         const playerActualProgress = Math.min(1, playerTotalCorrect / targetDistance);
-        playerVisualProgress += (playerActualProgress - playerVisualProgress) * 0.1;
-
         const aiActualProgress = Math.min(1, aiTotalChars / targetDistance);
+
+        playerVisualProgress += (playerActualProgress - playerVisualProgress) * 0.1;
         aiVisualProgress += (aiActualProgress - aiVisualProgress) * 0.1;
 
         pLapProgress = (playerVisualProgress * totalLaps) % 1;
@@ -414,15 +414,16 @@ function updateGame() {
         // HUD Position update
         posVal.innerText = playerVisualProgress >= aiVisualProgress ? "1" : "2";
 
-        if (playerVisualProgress >= 1) {
-        playerVisualProgress = 1;
-        updateCarPositions(1 % 1, aLapProgress); // Snap to finish
+        // INSTANT FINISH: Check actual progress instead of visual
+        if (playerActualProgress >= 1) {
+            playerVisualProgress = 1;
+            updateCarPositions(1 % 1, aLapProgress); // Snap to finish
             winRace('player');
             return;
         }
-        if (aiVisualProgress >= 1) {
-        aiVisualProgress = 1;
-        updateCarPositions(pLapProgress, 1 % 1); // Snap to finish
+        if (aiActualProgress >= 1) {
+            aiVisualProgress = 1;
+            updateCarPositions(pLapProgress, 1 % 1); // Snap to finish
             winRace('ai');
             return;
         }
@@ -533,6 +534,10 @@ function winRace(winner) {
 
     updatePersonalBest(cpm);
 
+    document.getElementById('start-btn').style.display = 'none';
+    document.getElementById('practice-btn').style.display = 'none';
+    document.getElementById('back-btn').style.display = 'block';
+
     setTimeout(() => {
         document.getElementById('overlay-container').style.display = 'flex';
         resultsArea.style.display = 'block';
@@ -559,6 +564,10 @@ function resetGame() {
     document.getElementById('overlay-container').style.display = 'flex';
     document.getElementById('hud').style.display = 'none';
     document.getElementById('typing-area').style.display = 'none';
+
+    document.getElementById('start-btn').style.display = 'block';
+    document.getElementById('practice-btn').style.display = 'block';
+    document.getElementById('back-btn').style.display = 'none';
 
     // Reset state variables
     playerVisualProgress = 0;
