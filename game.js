@@ -387,18 +387,25 @@ function updateGame() {
     // We assume an average race is ~300 characters per lap for progress scaling
     const targetDistance = totalLaps * 300;
 
-    const playerTotalCorrect = (playerCharsCompleted + playerCorrectInSentence) * nitroBoost + (idlingCPM * elapsedSeconds / 60);
-    const aiTotalChars = ((aiCPM + idlingCPM) * elapsedSeconds / 60);
+    // INCREMENTAL PROGRESS: Move cars based on speed and time passed
+    const idlingProgress = (idlingCPM * deltaTimeSeconds / 60);
+    const aiProgress = (aiCPMBase * deltaTimeSeconds / 60);
+
+    playerCurrentDistance += idlingProgress;
+    aiCurrentDistance += aiProgress;
+
+    // Player typing progress is absolute within the current session
+    const playerTotalProgress = (playerCharsCompleted + playerCorrectInSentence) * nitroBoost + playerCurrentDistance;
+
+    const playerActualProgress = Math.min(1, playerTotalProgress / targetDistance);
+    const aiActualProgress = Math.min(1, aiCurrentDistance / targetDistance);
+
+    playerVisualProgress += (playerActualProgress - playerVisualProgress) * 0.15;
+    aiVisualProgress += (aiActualProgress - aiVisualProgress) * 0.15;
 
     let pLapProgress, aLapProgress;
 
     if (gameMode === 'race') {
-        const playerActualProgress = Math.min(1, playerTotalCorrect / targetDistance);
-        const aiActualProgress = Math.min(1, aiTotalChars / targetDistance);
-
-        playerVisualProgress += (playerActualProgress - playerVisualProgress) * 0.1;
-        aiVisualProgress += (aiActualProgress - aiVisualProgress) * 0.1;
-
         pLapProgress = (playerVisualProgress * totalLaps) % 1;
         aLapProgress = (aiVisualProgress * totalLaps) % 1;
 
@@ -412,26 +419,26 @@ function updateGame() {
         // HUD Position update
         posVal.innerText = playerVisualProgress >= aiVisualProgress ? "1" : "2";
 
-        // INSTANT FINISH: Check actual progress instead of visual
+        // INSTANT FINISH: Check actual progress
         if (playerActualProgress >= 1) {
             playerVisualProgress = 1;
-            updateCarPositions(1 % 1, aLapProgress); // Snap to finish
+            updateCarPositions(0.999, aLapProgress); // Avoid modulo 1 back to 0
             winRace('player');
             return;
         }
         if (aiActualProgress >= 1) {
             aiVisualProgress = 1;
-            updateCarPositions(pLapProgress, 1 % 1); // Snap to finish
+            updateCarPositions(pLapProgress, 0.999);
             winRace('ai');
             return;
         }
     } else {
         // Infinite Practice Mode
         const lapLengthInChars = 300;
-        pLapProgress = (playerTotalCorrect / lapLengthInChars) % 1;
-        aLapProgress = (aiTotalChars / lapLengthInChars) % 1;
+        pLapProgress = (playerTotalProgress / lapLengthInChars) % 1;
+        aLapProgress = (aiCurrentDistance / lapLengthInChars) % 1;
 
-        const newLap = Math.floor(playerTotalCorrect / lapLengthInChars) + 1;
+        const newLap = Math.floor(playerTotalProgress / lapLengthInChars) + 1;
         if (newLap > currentLap) {
             currentLap = newLap;
             updateLapUI();
