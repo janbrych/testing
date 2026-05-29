@@ -12,6 +12,9 @@ let playerVisualProgress = 0;
 let aiVisualProgress = 0;
 let totalRaceChars = 0;
 let playerCharsCompleted = 0;
+let playerCurrentDistance = 0;
+let aiCurrentDistance = 0;
+let lastFrameTime = 0;
 
 const playerCar = document.getElementById('player-car');
 const aiCar = document.getElementById('ai-car');
@@ -237,6 +240,8 @@ function startGame(mode) {
     errors = 0;
     playerVisualProgress = 0;
     aiVisualProgress = 0;
+    playerCurrentDistance = 0;
+    aiCurrentDistance = 0;
     nitroAmount = 0;
     gameActive = false;
 
@@ -246,6 +251,7 @@ function startGame(mode) {
         initAudio();
         gameActive = true;
         startTime = Date.now();
+        lastFrameTime = startTime;
         typingInput.disabled = false;
         typingInput.focus();
         requestAnimationFrame(updateGame);
@@ -345,21 +351,13 @@ function updateGame() {
     if (pathLength === 0) pathLength = trackPath.getTotalLength();
 
     const now = Date.now();
+    const deltaTimeSeconds = (now - lastFrameTime) / 1000;
     const elapsedSeconds = (now - startTime) / 1000;
+    lastFrameTime = now;
 
     // Steady slow pace (Idling)
-    const idlingCPM = 50;
-
-    const aiCPMBase = { 'easy': 120, 'medium': 200, 'hard': 320 }[difficulty];
-
-    // AI Rubber-banding & Randomness
-    let aiMultiplier = 1.0 + (Math.sin(elapsedSeconds * 0.5) * 0.05); // Slight fluctuation
-    if (gameMode === 'race') {
-        const diff = playerVisualProgress - aiVisualProgress;
-        if (diff > 0.1) aiMultiplier += 0.1; // Catch up
-        else if (diff < -0.1) aiMultiplier -= 0.1; // Slow down
-    }
-    const aiCPM = aiCPMBase * aiMultiplier;
+    const idlingCPM = 80;
+    const aiCPMBase = { 'easy': 150, 'medium': 250, 'hard': 400 }[difficulty];
 
     // Player CPM calculation
     const currentCPM = Math.round((totalCharsTyped / (elapsedSeconds / 60)) || 0);
