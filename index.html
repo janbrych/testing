@@ -28,28 +28,21 @@
 
             <!-- SVG Track -->
             <svg id="track-svg" viewBox="0 0 1536 1024" preserveAspectRatio="xMidYMid meet">
-                <defs>
-                    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-                        <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
-                    </pattern>
-                </defs>
-                <rect width="100%" height="100%" fill="url(#grid)" />
-
-                <!-- Shadow/Glow of the track -->
-                <path id="track-path-glow" d="M100,800 C100,800 200,950 500,900 C800,850 900,600 700,500 C500,400 300,600 200,400 C100,200 400,100 800,150 C1200,200 1400,400 1400,600 C1400,800 1200,900 1000,850 C800,800 800,700 1000,650 C1200,600 1300,700 1200,800 C1100,900 300,850 100,800 Z"
-                    fill="none" stroke="rgba(241, 196, 15, 0.1)" stroke-width="90" stroke-linecap="round" />
-
                 <!-- Asphalt Base -->
-                <path id="track-base" d="M100,800 C100,800 200,950 500,900 C800,850 900,600 700,500 C500,400 300,600 200,400 C100,200 400,100 800,150 C1200,200 1400,400 1400,600 C1400,800 1200,900 1000,850 C800,800 800,700 1000,650 C1200,600 1300,700 1200,800 C1100,900 300,850 100,800 Z"
-                    fill="none" stroke="#333" stroke-width="80" stroke-linecap="round" />
+                <path id="track-base" d="M200,512 L400,512 C400,512 500,512 600,412 C700,312 800,212 1000,212 C1200,212 1336,412 1336,512 C1336,612 1200,812 1000,812 C800,812 700,712 600,612 C500,512 400,512 300,512 L200,512"
+                    fill="none" stroke="#cbd5e1" stroke-width="120" stroke-linecap="round" />
 
-                <!-- Lane Inner -->
-                <path id="track-lane" d="M100,800 C100,800 200,950 500,900 C800,850 900,600 700,500 C500,400 300,600 200,400 C100,200 400,100 800,150 C1200,200 1400,400 1400,600 C1400,800 1200,900 1000,850 C800,800 800,700 1000,650 C1200,600 1300,700 1200,800 C1100,900 300,850 100,800 Z"
-                    fill="none" stroke="#444" stroke-width="70" stroke-linecap="round" />
+                <!-- Track Surface -->
+                <path id="track-surface" d="M200,512 L400,512 C400,512 500,512 600,412 C700,312 800,212 1000,212 C1200,212 1336,412 1336,512 C1336,612 1200,812 1000,812 C800,812 700,712 600,612 C500,512 400,512 300,512 L200,512"
+                    fill="none" stroke="#f1f5f9" stroke-width="110" stroke-linecap="round" />
 
-                <!-- Dashed Center Line -->
-                <path id="track-path" d="M100,800 C100,800 200,950 500,900 C800,850 900,600 700,500 C500,400 300,600 200,400 C100,200 400,100 800,150 C1200,200 1400,400 1400,600 C1400,800 1200,900 1000,850 C800,800 800,700 1000,650 C1200,600 1300,700 1200,800 C1100,900 300,850 100,800 Z"
-                    fill="none" stroke="#eee" stroke-width="2" stroke-dasharray="20,30" />
+                <!-- Center Line -->
+                <path id="track-path" d="M200,512 L400,512 C400,512 500,512 600,412 C700,312 800,212 1000,212 C1200,212 1336,412 1336,512 C1336,612 1200,812 1000,812 C800,812 700,712 600,612 C500,512 400,512 300,512 L200,512"
+                    fill="none" stroke="#2563eb" stroke-width="2" stroke-dasharray="20,30" opacity="0.3" />
+
+                <!-- Finish Line -->
+                <line x1="200" y1="452" x2="200" y2="572" stroke="#2563eb" stroke-width="8" stroke-linecap="butt" />
+                <line x1="210" y1="452" x2="210" y2="572" stroke="#2563eb" stroke-width="2" stroke-dasharray="5,5" />
             </svg>
 
             <!-- Cars -->
@@ -79,6 +72,11 @@
                         <button class="lap-btn option-btn" onclick="setLaps(1)">1</button>
                         <button class="lap-btn option-btn active" onclick="setLaps(3)">3</button>
                         <button class="lap-btn option-btn" onclick="setLaps(5)">5</button>
+                    </div>
+
+                    <span class="label-small" style="margin-top: 15px;">Vyberte si auto</span>
+                    <div id="car-selection" class="option-group">
+                        <!-- Cars will be injected by JS -->
                     </div>
                 </div>
 

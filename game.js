@@ -33,6 +33,9 @@ let playerLastAngle = 0;
 let aiLastAngle = 0;
 let nitroAmount = 0;
 
+let selectedCarIndex = 8; // Default to 9th car (index 8)
+const totalCarsAvailable = 20; // 10 columns * 2 rows
+
 // Audio System
 let audioCtx;
 let engineOsc;
@@ -104,7 +107,40 @@ function updateAudio(speed, isTurning) {
 window.addEventListener('load', () => {
     pathLength = trackPath.getTotalLength();
     updateCarPositions(0, 0);
+    initCarSelection();
 });
+
+function initCarSelection() {
+    const container = document.getElementById('car-selection');
+    const carsToShow = [0, 1, 3, 8, 10, 12, 14, 18]; // Selection of nice cars
+
+    carsToShow.forEach(idx => {
+        const btn = document.createElement('div');
+        btn.className = 'car-option';
+        if (idx === selectedCarIndex) btn.classList.add('active');
+
+        // Calculate background position for preview
+        const col = idx % 10;
+        const row = Math.floor(idx / 10);
+        btn.style.backgroundPosition = `-${col * 40}px -${row * 80}px`;
+
+        btn.onclick = () => selectCar(idx);
+        container.appendChild(btn);
+    });
+}
+
+function selectCar(idx) {
+    selectedCarIndex = idx;
+    document.querySelectorAll('.car-option').forEach((btn, i) => {
+        const carsToShow = [0, 1, 3, 8, 10, 12, 14, 18];
+        btn.classList.toggle('active', carsToShow[i] === idx);
+    });
+
+    // Update player car visual
+    const col = idx % 10;
+    const row = Math.floor(idx / 10);
+    playerCar.style.backgroundPosition = `-${col * 50}px -${row * 100}px`;
+}
 
 function setDifficulty(d) {
     difficulty = d;
@@ -145,7 +181,21 @@ function fetchSentence() {
         "Pocit z dokonalého kola se nevyrovná ničemu jinému ve sportu.",
         "Zůstaňte v klidu pod tlakem, abyste si udrželi výkon při psaní.",
         "Závodní dráha je náročné místo pro člověka i stroj.",
-        "Zrychlení je klíčem k předjíždění soupeřů na rovince."
+        "Zrychlení je klíčem k předjíždění soupeřů na rovince.",
+        "Při psaní všemi deseti je důležité udržovat prsty v základní poloze.",
+        "Kvalitní mechanická klávesnice může výrazně zlepšit váš pocit z psaní.",
+        "Soustřeďte se na text před sebou a snažte se nedívat na své ruce.",
+        "Každá chyba vás stojí drahocenné sekundy v tomto napínavém závodě.",
+        "Adrenalin stoupá, když se přibližujete k poslední zatáčce před cílem.",
+        "Plynulost je často důležitější než syrová rychlost úhozů za minutu.",
+        "Vaše auto reaguje na každé správně napsané slovo okamžitým zrychlením.",
+        "V tréninkovém režimu můžete pilovat svou techniku bez tlaku soupeřů.",
+        "Závodní simulátory pomáhají profesionálním jezdcům učit se nové tratě.",
+        "Precizní brzdění a včasná akcelerace jsou základy rychlého kola.",
+        "Světlo světlometů prořezává tmu během nočního vytrvalostního závodu.",
+        "Týmová strategie hraje klíčovou roli v moderních automobilových závodech.",
+        "Aerodynamika vozu je navržena tak, aby poskytovala maximální přítlak.",
+        "V boxové uličce se počítá každá desetina sekundy při výměně kol."
     ];
     return sentences[Math.floor(Math.random() * sentences.length)];
 }
@@ -157,29 +207,26 @@ function startGame(mode) {
     document.getElementById('difficulty-selection').style.display = 'none';
     document.getElementById('results').style.display = 'none';
 
-    sentenceDisplay.innerHTML = "<span style='color: #aaa'>Načítání vět...</span>";
+    sentenceDisplay.innerHTML = "<span style='color: #64748b'>Načítání...</span>";
     document.getElementById('typing-area').style.display = 'flex';
     typingInput.disabled = true;
     typingInput.value = "";
 
-    raceSentences = [];
-    totalRaceChars = 0;
     playerCharsCompleted = 0;
     currentLap = 1;
 
     aiCar.style.display = 'block';
-    if (gameMode === 'race') {
-        for (let i = 0; i < totalLaps; i++) {
-            const s = fetchSentence();
-            raceSentences.push(s);
-            totalRaceChars += s.length;
-        }
-        currentSentence = raceSentences[0];
-    } else {
-        currentSentence = fetchSentence();
-        totalRaceChars = 150; // Reference for progress
-        totalLaps = 1;
-    }
+
+    // Set Player Car
+    selectCar(selectedCarIndex);
+
+    // Randomize AI Car
+    const aiIdx = Math.floor(Math.random() * totalCarsAvailable);
+    const aiCol = aiIdx % 10;
+    const aiRow = Math.floor(aiIdx / 10);
+    aiCar.style.backgroundPosition = `-${aiCol * 50}px -${aiRow * 100}px`;
+
+    currentSentence = fetchSentence();
 
     renderSentence("");
 
@@ -267,6 +314,8 @@ typingInput.addEventListener('input', () => {
     if (val.length > 0 && val[val.length - 1] !== currentSentence[val.length - 1]) {
         errors++;
         flashError();
+        // Velocity reduction penalty
+        playerCharsCompleted = Math.max(0, playerCharsCompleted - 1);
     }
 
     renderSentence(val);
@@ -275,26 +324,12 @@ typingInput.addEventListener('input', () => {
         sentenceDisplay.classList.add('correct-word-pop');
         setTimeout(() => sentenceDisplay.classList.remove('correct-word-pop'), 300);
 
-        if (gameMode === 'practice') {
-            playerCharsCompleted += currentSentence.length;
-            currentLap++;
-            updateLapUI();
-            currentSentence = fetchSentence();
-            typingInput.value = "";
-            renderSentence("");
-        } else {
-            playerCharsCompleted += currentSentence.length;
-            if (currentLap < totalLaps) {
-                currentSentence = raceSentences[currentLap];
-                currentLap++;
-                updateLapUI();
-                typingInput.value = "";
-                renderSentence("");
-            } else {
-                playerVisualProgress = 1;
-                winRace('player');
-            }
-        }
+        playerCharsCompleted += currentSentence.length;
+
+        // Cycle sentences continuously
+        currentSentence = fetchSentence();
+        typingInput.value = "";
+        renderSentence("");
     }
 });
 
@@ -313,37 +348,33 @@ function updateGame() {
 
     const now = Date.now();
     const elapsedSeconds = (now - startTime) / 1000;
-    const baseCPM = 40; // Minimum idling speed
-    const aiCPMBase = { 'easy': 160, 'medium': 260, 'hard': 420 }[difficulty];
 
-    // AI Rubber-banding
-    let aiMultiplier = 1.0;
+    // Steady slow pace (Idling)
+    const idlingCPM = 50;
+
+    const aiCPMBase = { 'easy': 160, 'medium': 240, 'hard': 380 }[difficulty];
+
+    // AI Rubber-banding & Randomness
+    let aiMultiplier = 1.0 + (Math.sin(elapsedSeconds * 0.5) * 0.05); // Slight fluctuation
     if (gameMode === 'race') {
         const diff = playerVisualProgress - aiVisualProgress;
-        if (diff > 0.05) aiMultiplier = 1.15;
-        else if (diff < -0.05) aiMultiplier = 0.85;
+        if (diff > 0.1) aiMultiplier += 0.1; // Catch up
+        else if (diff < -0.1) aiMultiplier -= 0.1; // Slow down
     }
     const aiCPM = aiCPMBase * aiMultiplier;
 
     // Player CPM calculation
     const currentCPM = Math.round((totalCharsTyped / (elapsedSeconds / 60)) || 0);
-    const speed = Math.min(450, Math.round(currentCPM * 0.8 + 20));
+    const speed = Math.min(500, Math.round(currentCPM * 0.9 + idlingCPM));
     speedVal.innerText = speed;
 
     // Nitro logic
-    if (currentCPM > 350) {
-        nitroAmount = Math.min(100, nitroAmount + 0.8);
+    if (currentCPM > 400) {
+        nitroAmount = Math.min(100, nitroAmount + 1.0);
     } else {
-        nitroAmount = Math.max(0, nitroAmount - 0.2);
+        nitroAmount = Math.max(0, nitroAmount - 0.4);
     }
     nitroBar.style.width = `${nitroAmount}%`;
-    if (nitroAmount > 80) {
-        nitroBar.classList.add('nitro-active');
-        playerCar.classList.add('nitro-visual');
-    } else {
-        nitroBar.classList.remove('nitro-active');
-        playerCar.classList.remove('nitro-visual');
-    }
 
     // Player progress calculation
     let playerCorrectInSentence = 0;
@@ -354,21 +385,33 @@ function updateGame() {
     }
 
     // Nitro boost effect on progress
-    const nitroBoost = nitroAmount > 80 ? 1.25 : 1.0;
-    const playerTotalCorrect = (playerCharsCompleted + playerCorrectInSentence) * nitroBoost + (baseCPM * elapsedSeconds / 60);
-    const aiTotalChars = ((aiCPM + baseCPM) * elapsedSeconds / 60);
+    const nitroBoost = nitroAmount > 80 ? 1.3 : 1.0;
+
+    // Total distance based on characters typed + idling time
+    // We assume an average race is ~300 characters per lap for progress scaling
+    const targetDistance = totalLaps * 300;
+
+    const playerTotalCorrect = (playerCharsCompleted + playerCorrectInSentence) * nitroBoost + (idlingCPM * elapsedSeconds / 60);
+    const aiTotalChars = ((aiCPM + idlingCPM) * elapsedSeconds / 60);
 
     let pLapProgress, aLapProgress;
 
     if (gameMode === 'race') {
-        const playerActualProgress = Math.min(1, playerTotalCorrect / totalRaceChars);
+        const playerActualProgress = Math.min(1, playerTotalCorrect / targetDistance);
         playerVisualProgress += (playerActualProgress - playerVisualProgress) * 0.1;
 
-        const aiActualProgress = Math.min(1, aiTotalChars / totalRaceChars);
+        const aiActualProgress = Math.min(1, aiTotalChars / targetDistance);
         aiVisualProgress += (aiActualProgress - aiVisualProgress) * 0.1;
 
         pLapProgress = (playerVisualProgress * totalLaps) % 1;
         aLapProgress = (aiVisualProgress * totalLaps) % 1;
+
+        // Lap detection
+        const newLap = Math.floor(playerVisualProgress * totalLaps) + 1;
+        if (newLap > currentLap && newLap <= totalLaps) {
+            currentLap = newLap;
+            updateLapUI();
+        }
 
         // HUD Position update
         posVal.innerText = playerVisualProgress >= aiVisualProgress ? "1" : "2";
@@ -382,9 +425,17 @@ function updateGame() {
             return;
         }
     } else {
-        const lapLen = 200;
-        pLapProgress = (playerTotalCorrect / lapLen) % 1;
-        aLapProgress = (aiTotalChars / lapLen) % 1;
+        // Infinite Practice Mode
+        const lapLengthInChars = 300;
+        pLapProgress = (playerTotalCorrect / lapLengthInChars) % 1;
+        aLapProgress = (aiTotalChars / lapLengthInChars) % 1;
+
+        const newLap = Math.floor(playerTotalCorrect / lapLengthInChars) + 1;
+        if (newLap > currentLap) {
+            currentLap = newLap;
+            updateLapUI();
+        }
+        posVal.innerText = "-";
     }
 
     updateCarPositions(pLapProgress, aLapProgress);
@@ -480,13 +531,13 @@ function winRace(winner) {
         resultsArea.style.display = 'block';
         if (winner === 'player') {
             winnerText.innerText = "VYHRÁL JSTE!";
-            winnerText.style.color = "#00ffcc";
-            winnerText.style.textShadow = "0 0 20px rgba(0, 255, 204, 0.8)";
+            winnerText.style.color = "#2563eb";
+            winnerText.style.textShadow = "none";
             document.getElementById('medal-icon').innerText = "🏆";
         } else {
             winnerText.innerText = "AI VYHRÁLA!";
-            winnerText.style.color = "#ff0066";
-            winnerText.style.textShadow = "0 0 20px rgba(255, 0, 102, 0.8)";
+            winnerText.style.color = "#64748b";
+            winnerText.style.textShadow = "none";
             document.getElementById('medal-icon').innerText = "🏁";
         }
 
